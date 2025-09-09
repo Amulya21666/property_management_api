@@ -1,16 +1,13 @@
-import random, os, shutil
+import random, os
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Request, Form, Depends, File, UploadFile, HTTPException
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
-from app import models, crud
+from app import crud
 from app.models import User, Property, PendingTenant
-
-UPLOAD_DIR = "app/static/uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -35,7 +32,6 @@ def login_post(request: Request, username: str = Form(...), password: str = Form
     request.session["user_id"] = user.id
     request.session["username"] = user.username
     request.session["role"] = user.role
-
     return RedirectResponse(url="/dashboard", status_code=302)
 
 
@@ -137,25 +133,28 @@ def invite_tenant_page(request: Request, db: Session = Depends(get_db), user=Dep
     if user.role != "owner":
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # Fetch all properties for this owner
     owner_properties = crud.get_properties_by_owner(db, user.id)
+    # Fetch pending tenants
     pending_tenants = db.query(PendingTenant).filter(PendingTenant.is_activated == False).all()
 
-    return templates.TemplateResponse("dashboard_tenant.html", {
+    return templates.TemplateResponse("invite_tenant.html", {
         "request": request,
         "user": user,
-        "owner_properties": owner_properties,
+        "properties": owner_properties,
         "pending_tenants": pending_tenants
     })
 
 
 @router.post("/owner/invite_tenant")
-def invite_tenant(request: Request, name: str = Form(...), email: str = Form(...),
-                  property_id: int = Form(None), flat_no: str = Form(None), room_no: str = Form(None),
-                  db: Session = Depends(get_db), user=Depends(get_current_user)):
+def invite_tenant_post(request: Request, name: str = Form(...), email: str = Form(...),
+                       property_id: int = Form(...), flat_no: str = Form(None), room_no: str = Form(None),
+                       db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     if user.role != "owner":
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # Check if already invited
     existing = db.query(PendingTenant).filter_by(email=email, is_activated=False).first()
     if existing:
         return {"error": "Tenant already invited."}
@@ -167,41 +166,23 @@ def invite_tenant(request: Request, name: str = Form(...), email: str = Form(...
     return RedirectResponse("/owner/invite_tenant_page", status_code=303)
 
 
-@router.get("/activate/{token}")
+@router.get("/activate/{token}", response_class=HTMLResponse)
 def activate_tenant(token: str, db: Session = Depends(get_db)):
     pending = db.query(PendingTenant).filter(
         PendingTenant.activation_token == token,
         PendingTenant.is_activated == False
     ).first()
+
     if not pending:
-        return {"error": "Invalid or expired activation link."}
+        return HTMLResponse(content="<h3>Invalid or expired activation link.</h3>", status_code=400)
 
-    # Create tenant user
+    # Activate the tenant and create a user
     tenant_user = crud.activate_tenant(db, pending_tenant=pending, password="default_password")
-    return {"success": "Tenant activated. You can now log in."}
 
+    return HTMLResponse(content=f"<h3>Tenant activated successfully! You can now log in.</h3>")
 
-# --------------------------
-# ASSIGN TENANT
-# --------------------------
-@router.get("/owner/assign_tenant")
-def assign_tenant_page(request: Request, db: Session = Depends(get_db)):
-    tenants = db.query(User).filter(User.role == "tenant").all()
-    properties = db.query(Property).all()
-    return templates.TemplateResponse(
-        "assign_tenant.html",
-        {"request": request, "tenants": tenants, "properties": properties}
-    )
-
-
-
-@router.post("/owner/assign_tenant", response_class=HTMLResponse)
-def assign_tenant(request: Request, tenant_id: int = Form(...), property_id: int = Form(...),
-                  flat_no: str = Form(...), room_no: str = Form(...),
-                  db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    if user.role != "owner":
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    crud.assign_tenant_to_property(db, tenant_id, property_id, flat_no, room_no)
-    return RedirectResponse("/dashboard", status_code=303)
-
+def send_activation_email(to_email: str, token: str):
+    activation_link = f"http://192.168.168.111:8000/activate/{token}"
+    subject = "Activate Your Tenant Account"
+    body = f"Click this link to activate your account:\n\n{activation_link}"
+    # send email logic here

@@ -114,3 +114,25 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+
+def send_activation_email(to_email: str, token: str):
+    # Use your hosted Render URL here
+    public_url = "https://property-management-api-e08h.onrender.com"
+    activation_link = f"{public_url}/activate/{token}"
+
+    subject = "Activate Your Tenant Account"
+    body = f"""
+    Hello,
+
+    You have been invited as a tenant. Click the link below to activate your account:
+
+    {activation_link}
+
+    If you didn't expect this email, you can ignore it.
+
+    Thanks,
+    Property Management Team
+    """
+
+    # Replace with your email sending logic (SMTP / SendGrid / etc.)
+    send_email(to_email, subject, body)
