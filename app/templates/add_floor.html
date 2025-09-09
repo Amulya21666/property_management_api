@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Floor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+    <h2 class="mb-4">➕ Add Floor to Property</h2>
+
+    <!-- ⚠️ Show warning if floor already exists -->
+    {% if request.query_params.get("error") == "exists" %}
+        <div class="alert alert-warning" role="alert">
+            ⚠️ This floor already exists for the selected property.
+        </div>
+    {% endif %}
+
+    <!-- ✅ Floor upload form -->
+    <form method="post" action="/floors/add" enctype="multipart/form-data" class="card p-4 shadow-sm">
+
+        <!-- Property Selector -->
+        <div class="mb-3">
+            <label for="property" class="form-label">🏘 Select Property</label>
+            <select name="property_id" id="property" class="form-select" required>
+                {% set selected_id = request.query_params.get('property_id') %}
+                {% for prop in properties %}
+                    <option value="{{ prop.id }}" {% if selected_id and selected_id == prop.id|string %}selected{% endif %}>
+                        {{ prop.name }} — {{ prop.address }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Floor Name -->
+        <div class="mb-3">
+            <label for="floor_name" class="form-label">🏢 Floor Name</label>
+            <select name="floor_name" id="floor_name" class="form-select" required>
+                <option value="">-- Select Floor --</option>
+                <option value="basement">Basement</option>
+                <option value="ground">Ground</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="roof">Roof</option>
+            </select>
+        </div>
+
+        <!-- File Upload -->
+        <div class="mb-3">
+            <label for="file" class="form-label">📂 Upload Floor Plan</label>
+            <input type="file" name="file" id="file" class="form-control" required>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+
+    <!-- ✅ Display extracted floorplan details -->
+    {% if extracted_details %}
+    <hr>
+    <h4>Extracted Floorplan Details:</h4>
+    <pre>{{ extracted_details }}</pre>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="/dashboard" class="btn btn-secondary">🔙 Back to Dashboard</a>
+    </div>
+</body>
+</html>

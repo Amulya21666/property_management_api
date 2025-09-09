@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Welcome, {{ user.username }} 👋</h2>
+    <hr>
+
+    {% if tenant_property %}
+        <h4>🏠 Your Property</h4>
+        <p><strong>{{ tenant_property.name }}</strong> — {{ tenant_property.address }}</p>
+    {% else %}
+        <p class="text-muted">No property assigned yet.</p>
+    {% endif %}
+
+    {% if tenant_floor %}
+        <h4>🏢 Floor</h4>
+        <p>{{ tenant_floor.floor_number }}</p>
+    {% endif %}
+
+    {% if tenant_flat or tenant_room %}
+        <h4>📍 Location</h4>
+        <p>
+            {% if tenant_flat %} Flat: {{ tenant_flat }} {% endif %}
+            {% if tenant_room %} | Room: {{ tenant_room }} {% endif %}
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

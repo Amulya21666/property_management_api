@@ -1,0 +1,213 @@
+import uuid
+from datetime import datetime, date
+from enum import Enum as PyEnum
+from sqlalchemy import (
+    Column, Integer, String, ForeignKey, DateTime,
+    Boolean, Date, Text, UniqueConstraint, Float, Enum
+)
+from sqlalchemy.orm import relationship
+from app.database import Base
+
+# ----------------------
+# User model
+# ----------------------
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(255), unique=True, index=True, nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    password_hash = Column(String(255), nullable=True)
+    role = Column(String(50), default="tenant")  # owner / manager / tenant
+
+    otp = Column(String(20), nullable=True)
+    otp_expiry = Column(DateTime, nullable=True)
+    is_verified = Column(Boolean, default=False)
+
+    # Tenant assignment
+    property_id = Column(Integer, ForeignKey("properties.id"), nullable=True)
+    floor_id = Column(Integer, ForeignKey("floors.id"), nullable=True)
+    flat_no = Column(String(50), nullable=True)
+    room_no = Column(String(50), nullable=True)
+
+    # Relationships
+    properties_as_tenant = relationship("Property", back_populates="tenants", foreign_keys=[property_id])
+    floor = relationship("Floor", foreign_keys=[floor_id])
+    appliances = relationship("Appliance", back_populates="user", cascade="all, delete-orphan")
+    properties_owned = relationship("Property", back_populates="owner", foreign_keys="Property.owner_id")
+    properties_managed = relationship("Property", back_populates="manager", foreign_keys="Property.manager_id")
+    activity_logs = relationship("ActivityLog", back_populates="user_obj", cascade="all, delete-orphan")
+    tenant_queries = relationship("TenantQuery", back_populates="user")
+    issues_reported = relationship("Issue", back_populates="tenant", foreign_keys="Issue.tenant_id")
+
+# ----------------------
+# Property model
+# ----------------------
+class Property(Base):
+    __tablename__ = "properties"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    address = Column(String(255), nullable=False)
+    property_type = Column(String(100), nullable=True)
+
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    # Relationships
+    owner = relationship("User", back_populates="properties_owned", foreign_keys=[owner_id])
+    manager = relationship("User", back_populates="properties_managed", foreign_keys=[manager_id])
+    tenants = relationship("User", back_populates="properties_as_tenant", foreign_keys=[User.property_id])
+
+    appliances = relationship("Appliance", back_populates="property", cascade="all, delete-orphan")
+    floors = relationship("Floor", back_populates="property", cascade="all, delete-orphan")
+    tenant_queries = relationship("TenantQuery", back_populates="property")
+    issues = relationship("Issue", back_populates="property")
+
+    __table_args__ = (UniqueConstraint('name', 'address', name='uix_name_address'),)
+
+# ----------------------
+# Floor model
+# ----------------------
+class Floor(Base):
+    __tablename__ = "floors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    floor_number = Column(String(50), nullable=False)
+    property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
+
+    floor_plan = Column(String(255), nullable=True)
+    extracted_details = Column(Text, nullable=True)
+
+    property = relationship("Property", back_populates="floors")
+    appliances = relationship("Appliance", back_populates="floor", cascade="all, delete-orphan")
+
+# ----------------------
+# Appliance model
+# ----------------------
+class Appliance(Base):
+    __tablename__ = "appliances"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
+    floor_id = Column(Integer, ForeignKey("floors.id"), nullable=True)
+
+    name = Column(String(100), nullable=False)
+    model = Column(String(100), nullable=True)
+    color = Column(String(50), nullable=True)
+    status = Column(String(50), nullable=True)
+    warranty_expiry = Column(Date, nullable=True)
+    location = Column(String(255), nullable=True)
+
+    front_image = Column(String(255), nullable=True)
+    detail_image = Column(String(255), nullable=True)
+
+    user = relationship("User", back_populates="appliances")
+    property = relationship("Property", back_populates="appliances")
+    floor = relationship("Floor", back_populates="appliances")
+    images = relationship("ApplianceImage", back_populates="appliance", cascade="all, delete-orphan")
+
+# ----------------------
+# ApplianceImage model
+# ----------------------
+class ApplianceImage(Base):
+    __tablename__ = "appliance_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=False)
+    image_path = Column(String(255), nullable=False)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+    appliance = relationship("Appliance", back_populates="images")
+
+# ----------------------
+# ActivityLog model
+# ----------------------
+class ActivityLog(Base):
+    __tablename__ = "activity_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    action = Column(String(255), nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    user = Column(String(100), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    user_obj = relationship("User", back_populates="activity_logs")
+
+# ----------------------
+# Vendor model
+# ----------------------
+class Vendor(Base):
+    __tablename__ = "vendors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    service_type = Column(String(100), nullable=False)
+    contact = Column(String(100), nullable=True)
+    rating = Column(Float, default=0.0)
+    total_jobs = Column(Integer, default=0)
+
+    issues = relationship("Issue", back_populates="vendor")
+
+# ----------------------
+# Issue model
+# ----------------------
+class IssueStatus(PyEnum):
+    pending = "pending"
+    assigned = "assigned"
+    completed = "completed"
+    verified = "verified"
+
+class Issue(Base):
+    __tablename__ = "issues"
+
+    id = Column(Integer, primary_key=True, index=True)
+    description = Column(Text, nullable=False)
+    status = Column(Enum(IssueStatus), default=IssueStatus.pending)
+    tenant_id = Column(Integer, ForeignKey("users.id"))
+    property_id = Column(Integer, ForeignKey("properties.id"))
+    vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
+    cost = Column(Float, nullable=True)
+    bill_url = Column(String(255), nullable=True)
+
+    tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
+    property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
+    vendor = relationship("Vendor", back_populates="issues", foreign_keys=[vendor_id])
+
+# ----------------------
+# TenantQuery model
+# ----------------------
+class TenantQuery(Base):
+    __tablename__ = "tenant_queries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    property_id = Column(Integer, ForeignKey("properties.id"))
+    subject = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="tenant_queries")
+    property = relationship("Property", back_populates="tenant_queries")
+
+# ----------------------
+# PendingTenant model
+# ----------------------
+class PendingTenant(Base):
+    __tablename__ = "pending_tenants"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    flat_no = Column(String(50), nullable=True)
+    room_no = Column(String(50), nullable=True)
+    activation_token = Column(String(255), unique=True, default=lambda: str(uuid.uuid4()))
+    is_activated = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    property_id = Column(Integer, ForeignKey("properties.id"), nullable=True)
+    floor_id = Column(Integer, ForeignKey("floors.id"), nullable=True)
+
+    property = relationship("Property")
+    floor = relationship("Floor")

@@ -1,0 +1,17 @@
+<form action="/floors/{{ floor.id }}/upload-plan" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="file" class="form-label">Upload Floor Plan</label>
+        <input class="form-control" type="file" name="file" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+{% if floor.floor_plan %}
+    <p>Current Floor Plan:</p>
+    <img src="{{ floor.floor_plan }}" alt="Floor Plan" width="300">
+{% endif %}
+
+{% if floor.extracted_details %}
+    <h4>Extracted Floorplan Details:</h4>
+    <pre>{{ floor.extracted_details | safe }}</pre>
+{% endif %}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ appliance.name }} - Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #f9f9f9, #e9ecef);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .appliance-container {
+      margin: 40px auto;
+      max-width: 900px;
+    }
+    .appliance-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 25px;
+    }
+    .images {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    .images img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      object-fit: contain;
+      background: #f8f9fa;
+      padding: 10px;
+    }
+    .info {
+      margin-top: 25px;
+    }
+    .info h3 {
+      margin-bottom: 15px;
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <div class="container appliance-container">
+    <div class="appliance-card">
+      <h2 class="text-center">{{ appliance.name }}</h2>
+
+      <div class="images">
+
+<!-- Front Image -->
+<div>
+  <h6 class="text-center">Front Image</h6>
+  <a href="{% if front_image %}
+              {{ url_for('static', path='uploads/' + front_image.replace('uploads/', '')) }}
+           {% elif appliance.name|lower == 'refrigerator' %}
+              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
+           {% else %}
+              {{ url_for('static', path='uploads/default_appliance.jpg') }}
+           {% endif %}"
+     target="_blank">
+    <img
+      src="{% if front_image %}
+              {{ url_for('static', path='uploads/' + front_image.replace('uploads/', '')) }}
+           {% elif appliance.name|lower == 'refrigerator' %}
+              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
+           {% else %}
+              {{ url_for('static', path='uploads/default_appliance.jpg') }}
+           {% endif %}"
+      alt="Front image of {{ appliance.name }}"
+      class="img-fluid rounded">
+  </a>
+</div>
+
+<!-- Detail Image -->
+<div>
+  <h6 class="text-center">Detail Image</h6>
+  <a href="{% if detail_image %}
+              {{ url_for('static', path='uploads/' + detail_image.replace('uploads/', '')) }}
+           {% elif appliance.name|lower == 'refrigerator' %}
+              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
+           {% else %}
+              {{ url_for('static', path='uploads/default_appliance.jpg') }}
+           {% endif %}"
+     target="_blank">
+    <img
+      src="{% if detail_image %}
+              {{ url_for('static', path='uploads/' + detail_image.replace('uploads/', '')) }}
+           {% elif appliance.name|lower == 'refrigerator' %}
+              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
+           {% else %}
+              {{ url_for('static', path='uploads/default_appliance.jpg') }}
+           {% endif %}"
+      alt="Detail image of {{ appliance.name }}"
+      class="img-fluid rounded">
+  </a>
+</div>
+
+
+      </div>
+
+      <div class="info">
+        <h3>Appliance Information</h3>
+        <ul class="list-group">
+          <li class="list-group-item"><b>Model:</b> {{ appliance.model }}</li>
+          <li class="list-group-item"><b>Color:</b> {{ appliance.color }}</li>
+          <li class="list-group-item"><b>Status:</b> {{ appliance.status }}</li>
+          <li class="list-group-item"><b>Warranty Expiry:</b> {{ appliance.warranty_expiry }}</li>
+        </ul>
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="/view_properties" class="btn btn-secondary">⬅ Back to Properties</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

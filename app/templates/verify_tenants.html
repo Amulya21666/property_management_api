@@ -1,0 +1,28 @@
+<h2>Tenant Verification</h2>
+
+{% for tenant in tenants %}
+<div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+    <p><strong>{{ tenant.name }}</strong> ({{ tenant.email }})</p>
+    <form action="/assign_tenant_owner" method="post">
+        <input type="hidden" name="tenant_id" value="{{ tenant.id }}">
+
+        <label>Property:</label>
+        <select name="property_id">
+            {% for property in properties %}
+            <option value="{{ property.id }}">{{ property.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Floor ID:</label>
+        <input type="text" name="floor_id" required>
+        <label>Flat No:</label>
+        <input type="text" name="flat_no" required>
+        <label>Room No:</label>
+        <input type="text" name="room_no" required>
+
+        <button type="submit">Verify & Assign</button>
+    </form>
+</div>
+{% else %}
+<p>No tenants pending verification.</p>
+{% endfor %}

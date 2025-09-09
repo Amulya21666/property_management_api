@@ -1,0 +1,49 @@
+<!-- app/templates/assign_tenant.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Tenant</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>Assign Tenant to Property</h2>
+    <form action="/owner/assign_tenant" method="post">
+        <!-- Select Tenant -->
+        <div class="mb-3">
+            <label class="form-label">Select Tenant</label>
+            <select name="tenant_id" class="form-select" required>
+                <option value="">-- Select Tenant --</option>
+                {% for tenant in tenants %}
+                    <option value="{{ tenant.id }}">{{ tenant.username }} ({{ tenant.email }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Select Property -->
+        <div class="mb-3">
+            <label class="form-label">Select Property</label>
+            <select name="property_id" class="form-select" required>
+                <option value="">-- Select Property --</option>
+                {% for prop in properties %}
+                    <option value="{{ prop.id }}">{{ prop.name }} - {{ prop.location }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Optional Flat No -->
+        <div class="mb-3">
+            <label class="form-label">Flat No (optional)</label>
+            <input type="text" name="flat_no" class="form-control">
+        </div>
+
+        <!-- Optional Room No -->
+        <div class="mb-3">
+            <label class="form-label">Room No (optional)</label>
+            <input type="text" name="room_no" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Assign Tenant</button>
+    </form>
+</body>
+</html>

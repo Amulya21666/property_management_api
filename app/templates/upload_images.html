@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Images</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>Upload Images</h2>
+
+    <form action="/upload-images" method="post" enctype="multipart/form-data">
+        <label class="image-upload">
+            <img id="frontPreview" src="{{ uploaded_front_image or '/static/placeholder.png' }}" alt="Front Image" />
+            <input type="file" name="front_image" accept="image/*" onchange="previewImage(event, 'frontPreview')">
+        </label>
+
+        <label class="image-upload">
+            <img id="backPreview" src="{{ uploaded_back_image or '/static/placeholder.png' }}" alt="Back Image" />
+            <input type="file" name="back_image" accept="image/*" onchange="previewImage(event, 'backPreview')">
+        </label>
+
+        <label class="image-upload">
+            <img id="leftPreview" src="{{ uploaded_left_image or '/static/placeholder.png' }}" alt="Left Image" />
+            <input type="file" name="left_image" accept="image/*" onchange="previewImage(event, 'leftPreview')">
+        </label>
+
+        <label class="image-upload">
+            <img id="rightPreview" src="{{ uploaded_right_image or '/static/placeholder.png' }}" alt="Right Image" />
+            <input type="file" name="right_image" accept="image/*" onchange="previewImage(event, 'rightPreview')">
+        </label>
+
+        <button type="submit">Upload</button>
+    </form>
+
+    <script>
+        function previewImage(event, previewId) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById(previewId).src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>

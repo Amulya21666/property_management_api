@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Owner Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      background:
+        linear-gradient(to bottom right, rgba(135, 206, 235, 0.85), rgba(224, 247, 255, 0.85)),
+        url("{{ url_for('static', path='dashboard.jpg') }}") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 30px 50px;
+      min-height: 100vh;
+    }
+    /* Welcome Banner */
+    .welcome-banner {
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 20px;
+      padding: 60px 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s ease;
+      min-height: 200px;
+    }
+    .welcome-banner:hover { transform: translateY(-5px); }
+    .welcome-banner h2 { font-size: 36px; margin-bottom: 15px; }
+    .welcome-banner p { font-size: 20px; color: #555; }
+
+    /* Stats */
+    .stats-container { display: flex; flex-wrap: wrap; gap: 25px; margin-bottom: 50px; }
+    .stats-card {
+      flex: 1 1 calc(25% - 25px);
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 18px;
+      padding: 50px 20px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      min-height: 220px;
+    }
+    .stats-card:hover { transform: translateY(-6px); box-shadow: 0 12px 28px rgba(0,0,0,0.15); }
+    .stats-card span { display: block; font-size: 36px; font-weight: bold; margin-top: 10px; color: #333; }
+
+    /* Action Grid */
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      width: 100%;
+      margin-bottom: 50px;
+    }
+    .action-card {
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 20px;
+      padding: 50px 25px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.07);
+      min-height: 240px;
+    }
+    .action-card:hover { transform: translateY(-6px); box-shadow: 0 14px 32px rgba(0,0,0,0.15); background: linear-gradient(145deg, #f0f8ff, #ffffff); }
+    .action-card-icon { font-size: 60px; margin-bottom: 20px; }
+    .action-card-text { font-weight: 700; font-size: 24px; color: #333; }
+    a.text-decoration-none { color: inherit; }
+
+    /* Tech Cards */
+    .tech-section { margin-top: 50px; }
+    .tech-card {
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 20px;
+      padding: 40px 25px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+      min-height: 260px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 30px;
+    }
+    .tech-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+    .tech-card h5 { font-weight: 700; margin-bottom: 15px; }
+    .tech-card ul { max-height: 180px; overflow-y: auto; padding-left: 15px; }
+
+    /* Appliances */
+    .appliance-card {
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .appliance-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
+    .appliance-card img { margin-bottom: 15px; }
+    .tenant-table th, .tenant-table td { vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+
+  <!-- Greeting -->
+  <div class="welcome-banner">
+    <h2>Hello {{ user.username }} 👋</h2>
+    <p>Manage your properties, appliances, and tenants!</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-container">
+    <div class="stats-card">🏘 Total Properties<span>{{ total_properties_count }}</span></div>
+    <div class="stats-card">🏢 Total Floors<span>{{ total_floors_count }}</span></div>
+    <div class="stats-card">🔌 Total Appliances<span>{{ total_appliance_count }}</span></div>
+    <div class="stats-card">⏳ Expiring Soon<span>{{ appliances_expiring_count }}</span></div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-grid">
+    <a href="/add_property_page" class="text-decoration-none">
+      <div class="action-card">
+        <div class="action-card-icon text-success"><i class="bi bi-building-add"></i></div>
+        <div class="action-card-text">Add Property</div>
+      </div>
+    </a>
+    <a href="/assign_property_page" class="text-decoration-none">
+      <div class="action-card">
+        <div class="action-card-icon text-primary"><i class="bi bi-person-badge-fill"></i></div>
+        <div class="action-card-text">Assign Property</div>
+      </div>
+    </a>
+    <a href="/add_appliance_page" class="text-decoration-none">
+      <div class="action-card">
+        <div class="action-card-icon text-warning"><i class="bi bi-plug-fill"></i></div>
+        <div class="action-card-text">Add Appliance</div>
+      </div>
+    </a>
+    <a href="/view_properties" class="text-decoration-none">
+      <div class="action-card">
+        <div class="action-card-icon text-info"><i class="bi bi-house-gear-fill"></i></div>
+        <div class="action-card-text">View Properties</div>
+      </div>
+    </a>
+    <a href="/owner/invite_tenant_page" class="text-decoration-none">
+      <div class="action-card">
+        <div class="action-card-icon text-secondary"><i class="bi bi-person-plus-fill"></i></div>
+        <div class="action-card-text">Invite Tenant</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Pending Tenant Invites -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="tech-card">
+        <h5>Pending Tenant Invites</h5>
+        {% if pending_tenants %}
+          <table class="table table-striped tenant-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Property</th>
+                <th>Flat/Room</th>
+                <th>Invited At</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tenant in pending_tenants %}
+                <tr>
+                  <td>{{ tenant.name }}</td>
+                  <td>{{ tenant.email }}</td>
+                  <td>{{ tenant.property.name }}</td>
+                  <td>{{ tenant.flat_no }}/{{ tenant.room_no }}</td>
+                  <td>{{ tenant.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                  <td>{{ 'Activated' if tenant.is_activated else 'Pending' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p>No pending tenant invites.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Technical Insights -->
+  <div class="tech-section">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="tech-card text-center">
+          <h5>Overall Appliance Health</h5>
+          <div style="width:300px; height:220px; margin:auto;">
+            <canvas id="gaugeChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="tech-card text-center">
+          <h5>Appliance Types vs Status</h5>
+          <div style="width:400px; height:300px; margin:auto;">
+            <canvas id="stackedBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 🔽 Add this inside your container-fluid, after Action Buttons, before Pending Tenant Invites -->
+
+<!-- Assign Tenant to Property -->
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="tech-card">
+      <h5>Assign Tenant to Property</h5>
+      <form action="/assign_tenant" method="post" class="row g-3">
+
+        <!-- Tenant Dropdown -->
+        <div class="col-md-3">
+          <label for="tenant" class="form-label">Select Tenant</label>
+          <select class="form-select" name="tenant_id" required>
+            <option value="" disabled selected>-- Select Tenant --</option>
+            {% for tenant in unassigned_tenants %}
+              <option value="{{ tenant.id }}">{{ tenant.username }} ({{ tenant.email }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Property Dropdown -->
+        <div class="col-md-3">
+          <label for="property" class="form-label">Select Property</label>
+          <select class="form-select" name="property_id" required>
+            <option value="" disabled selected>-- Select Property --</option>
+            {% for property in properties %}
+              <option value="{{ property.id }}">{{ property.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Flat No -->
+        <div class="col-md-2">
+          <label for="flat" class="form-label">Flat No</label>
+          <input type="text" class="form-control" name="flat_no" placeholder="101 / A-3">
+        </div>
+
+        <!-- Room No -->
+        <div class="col-md-2">
+          <label for="room" class="form-label">Room No</label>
+          <input type="text" class="form-control" name="room_no" placeholder="B2 / 302">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-check-circle-fill"></i> Assign
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Activity Logs -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="tech-card">
+        <h5>Recent Activity Logs</h5>
+        {% if logs %}
+          <ul>
+            {% for log in logs %}
+              <li>{{ log.timestamp.strftime("%Y-%m-%d %H:%M:%S") }} - <strong>{{ log.user }}</strong> {{ log.action }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No recent activity.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let gaugeChart, stackedBarChart;
+
+function initCharts() {
+    const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
+    gaugeChart = new Chart(ctxGauge, {
+        type: 'doughnut',
+        data: { labels: ['Working', 'Not Working'], datasets: [{ data: [0,100], backgroundColor: ['#4CAF50','#E53935'], borderWidth:0 }] },
+        options: { rotation:-90, circumference:180, cutout:'70%', plugins:{ legend:{ display:false } } }
+    });
+
+    const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
+    stackedBarChart = new Chart(ctxBar, {
+        type:'bar',
+        data:{ labels:[], datasets:[
+            {label:'Working', data:[], backgroundColor:'#4CAF50'},
+            {label:'Not Working', data:[], backgroundColor:'#E53935'},
+            {label:'Warranty Expired', data:[], backgroundColor:'#FFC107'}
+        ]},
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1 } } } }
+    });
+}
+
+async function loadCharts() {
+    const res = await fetch("/api/appliance-stats");
+    const data = await res.json();
+
+    gaugeChart.data.datasets[0].data = [data.health_percent||0, 100-(data.health_percent||0)];
+    gaugeChart.update();
+
+    const labels = Object.keys(data.type_status||{});
+    stackedBarChart.data.labels = labels;
+    stackedBarChart.data.datasets[0].data = labels.map(l => data.type_status[l]?.Working||0);
+    stackedBarChart.data.datasets[1].data = labels.map(l => data.type_status[l]?.["Not Working"]||0);
+    stackedBarChart.data.datasets[2].data = labels.map(l => data.type_status[l]?.["Warranty Expired"]||0);
+    stackedBarChart.update();
+}
+
+initCharts();
+loadCharts();
+</script>
+
+</body>
+</html>
