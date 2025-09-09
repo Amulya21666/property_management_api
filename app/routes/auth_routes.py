@@ -180,9 +180,3 @@ def activate_tenant(token: str, db: Session = Depends(get_db)):
     tenant_user = crud.activate_tenant(db, pending_tenant=pending, password="default_password")
 
     return HTMLResponse(content=f"<h3>Tenant activated successfully! You can now log in.</h3>")
-
-def send_activation_email(to_email: str, token: str):
-    activation_link = f"http://192.168.168.111:8000/activate/{token}"
-    subject = "Activate Your Tenant Account"
-    body = f"Click this link to activate your account:\n\n{activation_link}"
-    # send email logic here

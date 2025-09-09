@@ -115,8 +115,10 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+# utils.py
+
 def send_activation_email(to_email: str, token: str):
-    # Use your hosted Render URL here
+    # Hosted Render URL
     public_url = "https://property-management-api-e08h.onrender.com"
     activation_link = f"{public_url}/activate/{token}"
 
@@ -134,5 +136,24 @@ def send_activation_email(to_email: str, token: str):
     Property Management Team
     """
 
-    # Replace with your email sending logic (SMTP / SendGrid / etc.)
-    send_email(to_email, subject, body)
+    # Send email via Brevo
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+    payload = {
+        "sender": {"name": "Property Management", "email": SENDER_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": f"<html><body><p>{body.replace(chr(10), '<br>')}</p></body></html>"
+    }
+    try:
+        import requests
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Brevo API Response [{response.status_code}]: {response.text}")
+        return response.status_code in [200, 201]
+    except Exception as e:
+        print(f"❌ Exception while sending activation email: {e}")
+        return False
