@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tenant Account Activation</title>
+</head>
+<body>
+    <h2>Activate Account for {{ email }}</h2>
+    <form method="post" action="/activate/{{ token }}">
+        <label>Create Password:</label><br>
+        <input type="password" name="password" required><br><br>
+        <button type="submit">Activate Account</button>
+    </form>
+</body>
+</html>

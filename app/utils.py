@@ -70,39 +70,7 @@ def verify_otp(user, input_otp: str) -> bool:
         return False
     return True
 
-# --------------------------
-# Tenant activation email
-# --------------------------
-def send_activation_email(to_email: str, token: str) -> bool:
-    """Send tenant account activation email"""
-    try:
-        activation_link = f"http://localhost:8000/activate/{token}"  # Change domain in production
-        url = "https://api.brevo.com/v3/smtp/email"
-        headers = {
-            "accept": "application/json",
-            "api-key": BREVO_API_KEY,
-            "content-type": "application/json"
-        }
-        payload = {
-            "sender": {"name": "Your App", "email": SENDER_EMAIL},
-            "to": [{"email": to_email}],
-            "subject": "Activate Your Tenant Account",
-            "htmlContent": f"""
-            <html><body>
-                <p>Hello,</p>
-                <p>Please activate your account by clicking the link below:</p>
-                <a href="{activation_link}">Activate Account</a>
-                <p>Thank you!</p>
-            </body></html>
-            """
-        }
-        response = requests.post(url, headers=headers, json=payload)
-        print(f"Brevo API Response [{response.status_code}]: {response.text}")
-        return response.status_code in [200, 201]
-    except Exception as e:
-        print(f"❌ Exception while sending activation email: {e}")
-        return False
-
+#
 # --------------------------
 # Get current user (session-based)
 # --------------------------

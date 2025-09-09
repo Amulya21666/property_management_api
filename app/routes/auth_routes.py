@@ -167,16 +167,36 @@ def invite_tenant_post(request: Request, name: str = Form(...), email: str = For
 
 
 @router.get("/activate/{token}", response_class=HTMLResponse)
-def activate_tenant(token: str, db: Session = Depends(get_db)):
+def activate_account_form(request: Request, token: str, db: Session = Depends(get_db)):
+    token = token.strip()
     pending = db.query(PendingTenant).filter(
         PendingTenant.activation_token == token,
         PendingTenant.is_activated == False
     ).first()
 
     if not pending:
-        return HTMLResponse(content="<h3>Invalid or expired activation link.</h3>", status_code=400)
+        return HTMLResponse(content="<h3>❌ Invalid or expired activation link.</h3>", status_code=400)
 
-    # Activate the tenant and create a user
-    tenant_user = crud.activate_tenant(db, pending_tenant=pending, password="default_password")
+    # Show password creation form
+    return templates.TemplateResponse("activate_tenant.html", {
+        "request": request,
+        "token": token,
+        "email": pending.email
+    })
 
-    return HTMLResponse(content=f"<h3>Tenant activated successfully! You can now log in.</h3>")
+
+@router.post("/activate/{token}", response_class=HTMLResponse)
+def activate_tenant(request: Request, token: str, password: str = Form(...), db: Session = Depends(get_db)):
+    token = token.strip()
+    pending = db.query(PendingTenant).filter(
+        PendingTenant.activation_token == token,
+        PendingTenant.is_activated == False
+    ).first()
+
+    if not pending:
+        return HTMLResponse(content="<h3>❌ Invalid or expired activation link.</h3>", status_code=400)
+
+    # ✅ Activate tenant
+    tenant_user = crud.activate_tenant(db, pending_tenant=pending, password=password)
+
+    return RedirectResponse(url="/login", status_code=302)
