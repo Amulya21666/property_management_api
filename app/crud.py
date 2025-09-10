@@ -219,12 +219,14 @@ def create_pending_tenant(db: Session, name: str, email: str, property_id: int =
     db.refresh(tenant)
     return tenant
 
-def activate_tenant(db: Session, pending_tenant, password: str):
+def activate_tenant(db: Session, pending_tenant, password: str, name: str, phone: str):
     """Convert PendingTenant → User (tenant)"""
     hashed_password = hash_password(password)
     tenant_user = User(
         username=pending_tenant.email,
+        name=name,          # store tenant’s name
         email=pending_tenant.email,
+        phone=phone,        # store tenant’s phone number
         password_hash=hashed_password,
         role="tenant",
         property_id=pending_tenant.property_id,
@@ -237,6 +239,8 @@ def activate_tenant(db: Session, pending_tenant, password: str):
     db.commit()
     db.refresh(tenant_user)
     return tenant_user
+
+
 
 # --------------------------
 # TENANT ASSIGNMENT
