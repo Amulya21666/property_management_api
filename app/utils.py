@@ -85,10 +85,11 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
 
 # utils.py
 
+# utils.py
+PUBLIC_URL = os.getenv("PUBLIC_URL", "http://127.0.0.1:8000")
+
 def send_activation_email(to_email: str, token: str):
-    # Hosted Render URL
-    public_url = "https://property-management-api-e08h.onrender.com"
-    activation_link = f"{public_url}/activate/{token}"
+    activation_link = f"{PUBLIC_URL}/activate/{token}"
 
     subject = "Activate Your Tenant Account"
     body = f"""
@@ -118,9 +119,9 @@ def send_activation_email(to_email: str, token: str):
         "htmlContent": f"<html><body><p>{body.replace(chr(10), '<br>')}</p></body></html>"
     }
     try:
-        import requests
         response = requests.post(url, headers=headers, json=payload)
         print(f"Brevo API Response [{response.status_code}]: {response.text}")
+        print(f"✅ Activation link sent: {activation_link}")  # Debug print
         return response.status_code in [200, 201]
     except Exception as e:
         print(f"❌ Exception while sending activation email: {e}")

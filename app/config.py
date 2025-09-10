@@ -4,13 +4,13 @@ from dotenv import load_dotenv
 # Load .env variables
 load_dotenv()
 
-SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = int(os.getenv("SMTP_PORT"))
-SMTP_EMAIL = os.getenv("SMTP_EMAIL")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+APP_URL = os.getenv("APP_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Test printing (safe)
-print("SMTP_SERVER:", SMTP_SERVER)
-print("SMTP_PORT:", SMTP_PORT)
-print("SMTP_EMAIL:", SMTP_EMAIL)
-print("SMTP_PASSWORD:", "*" * 8)  # Hides the actual password
+print("BREVO_API_KEY:", "*" * 8)  # hide actual key
+print("SENDER_EMAIL:", SENDER_EMAIL)
+print("APP_URL:", APP_URL)
+print("DATABASE_URL:", DATABASE_URL[:40] + "...")
