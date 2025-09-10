@@ -187,6 +187,7 @@ def activate_account_form(request: Request, token: str, db: Session = Depends(ge
 @router.post("/activate/{token}", response_class=HTMLResponse)
 def activate_tenant(request: Request, token: str,
                     name: str = Form(...),
+                    phone: str = Form(...),
                     password: str = Form(...),
                     confirm_password: str = Form(...),
                     db: Session = Depends(get_db)):
@@ -212,7 +213,8 @@ def activate_tenant(request: Request, token: str,
         db,
         pending_tenant=pending,
         password=password,
-        name=name
+        name=name,
+        phone=phone
     )
 
     # 🎉 Show success page
@@ -222,16 +224,3 @@ def activate_tenant(request: Request, token: str,
     })
 
 
-
-@router.get("/tenant/dashboard", response_class=HTMLResponse)
-def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    if user.role != "tenant":
-        return RedirectResponse("/login", status_code=302)
-
-    property_obj = crud.get_tenant_property(db, user.id)
-
-    return templates.TemplateResponse("dashboard_tenant.html", {
-        "request": request,
-        "user": user,
-        "property": property_obj
-    })
