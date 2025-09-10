@@ -187,7 +187,6 @@ def activate_account_form(request: Request, token: str, db: Session = Depends(ge
 @router.post("/activate/{token}", response_class=HTMLResponse)
 def activate_tenant(request: Request, token: str,
                     name: str = Form(...),
-                    phone: str = Form(...),
                     password: str = Form(...),
                     confirm_password: str = Form(...),
                     db: Session = Depends(get_db)):
@@ -213,8 +212,7 @@ def activate_tenant(request: Request, token: str,
         db,
         pending_tenant=pending,
         password=password,
-        name=name,
-        phone=phone
+        name=name
     )
 
     # 🎉 Show success page

@@ -225,8 +225,7 @@ def activate_tenant(db: Session, pending_tenant, password: str, name: str, phone
     tenant_user = User(
         username=pending_tenant.email,
         name=name,          # store tenant’s name
-        email=pending_tenant.email,
-        phone=phone,        # store tenant’s phone number
+        email=pending_tenant.email,        # store tenant’s phone number
         password_hash=hashed_password,
         role="tenant",
         property_id=pending_tenant.property_id,
