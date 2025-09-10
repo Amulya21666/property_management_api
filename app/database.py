@@ -1,15 +1,16 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
-# ✅ SQLite DB path
-SQLALCHEMY_DATABASE_URL = "sqlite:///test.db"
+# ✅ Get DATABASE_URL from environment (set this on Render)
+SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///test.db")
+# Fallback to SQLite locally if DATABASE_URL is not set
 
 # ✅ Create the database engine
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},  # SQLite-specific
     echo=False  # Set True if you want SQL logs
 )
 
