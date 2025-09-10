@@ -184,9 +184,13 @@ def activate_account_form(request: Request, token: str, db: Session = Depends(ge
         "email": pending.email
     })
 
-
 @router.post("/activate/{token}", response_class=HTMLResponse)
-def activate_tenant(request: Request, token: str, password: str = Form(...), db: Session = Depends(get_db)):
+def activate_tenant(request: Request, token: str,
+                    name: str = Form(...),
+                    phone: str = Form(...),
+                    password: str = Form(...),
+                    confirm_password: str = Form(...),
+                    db: Session = Depends(get_db)):
     token = token.strip()
     pending = db.query(PendingTenant).filter(
         PendingTenant.activation_token == token,
@@ -196,7 +200,40 @@ def activate_tenant(request: Request, token: str, password: str = Form(...), db:
     if not pending:
         return HTMLResponse(content="<h3>❌ Invalid or expired activation link.</h3>", status_code=400)
 
-    # ✅ Activate tenant
-    tenant_user = crud.activate_tenant(db, pending_tenant=pending, password=password)
+    if password != confirm_password:
+        return templates.TemplateResponse("activate_tenant.html", {
+            "request": request,
+            "token": token,
+            "email": pending.email,
+            "error": "Passwords do not match"
+        })
 
-    return RedirectResponse(url="/login", status_code=302)
+    # ✅ Activate tenant
+    tenant_user = crud.activate_tenant(
+        db,
+        pending_tenant=pending,
+        password=password,
+        name=name,
+        phone=phone
+    )
+
+    # 🎉 Show success page
+    return templates.TemplateResponse("activation_success.html", {
+        "request": request,
+        "name": tenant_user.name
+    })
+
+
+
+@router.get("/tenant/dashboard", response_class=HTMLResponse)
+def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if user.role != "tenant":
+        return RedirectResponse("/login", status_code=302)
+
+    property_obj = crud.get_tenant_property(db, user.id)
+
+    return templates.TemplateResponse("dashboard_tenant.html", {
+        "request": request,
+        "user": user,
+        "property": property_obj
+    })

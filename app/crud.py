@@ -270,3 +270,10 @@ def hash_password(password: str):
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
+
+def get_tenant_property(db, tenant_id: int):
+    from app.models import Property, User
+    tenant = db.query(User).filter(User.id == tenant_id).first()
+    if not tenant or not tenant.property_id:
+        return None
+    return db.query(Property).filter(Property.id == tenant.property_id).first()
