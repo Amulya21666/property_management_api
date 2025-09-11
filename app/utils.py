@@ -15,7 +15,8 @@ from app import models
 # --------------------------
 load_dotenv()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
-SENDER_EMAIL = os.getenv("SENDER_EMAIL")  # Must match your verified sender email
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+PUBLIC_URL = os.getenv("PUBLIC_URL", "http://127.0.0.1:8000")# Must match your verified sender email
 
 # --------------------------
 # Password hashing
@@ -86,7 +87,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
 # utils.py
 
 # utils.py
-PUBLIC_URL = os.getenv("PUBLIC_URL", "http://127.0.0.1:8000")
+
 
 def send_activation_email(to_email: str, token: str):
     activation_link = f"{PUBLIC_URL}/activate/{token}"
