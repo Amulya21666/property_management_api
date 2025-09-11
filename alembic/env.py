@@ -1,18 +1,25 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
+import os
 
 # Import your models and Base
 from app.database import Base
-from app import models  # This ensures models are registered for autogenerate
+from app import models  # ensures models are registered for autogenerate
 
 # This is the Alembic Config object
 config = context.config
 
 # Set up Python logging (optional but helpful)
-fileConfig(config.config_file_name)
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
 
-# Set the target metadata for 'autogenerate' support
+# ✅ Prefer DATABASE_URL environment variable over alembic.ini
+db_url = os.getenv("DATABASE_URL")
+if db_url:
+    config.set_main_option("sqlalchemy.url", db_url)
+
+# Target metadata for 'autogenerate' support
 target_metadata = Base.metadata
 
 
