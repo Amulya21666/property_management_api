@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 from app import crud
-from app.models import User, Property, PendingTenant
+from app.models import User, Property, Appliance, PendingTenant
+
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -234,7 +235,7 @@ def activate_tenant(request: Request, token: str,
     ])
 
     # 🎉 Show tenant dashboard instead of simple success page
-    return templates.TemplateResponse("tenant_dashboard.html", {
+    return templates.TemplateResponse("dashboard_tenant.html", {
         "request": request,
         "user": tenant_user,
         "property": property_obj,
