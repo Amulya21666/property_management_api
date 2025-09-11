@@ -1,66 +1,39 @@
-{% extends "base.html" %}
+<h2>Welcome {{ tenant_name }}!</h2>
 
-{% block content %}
-<div class="container mt-5">
-    <div class="text-center mb-5">
-        <h2 class="fw-bold text-dark">👋 Welcome, {{ user.username }}</h2>
-        <p class="text-muted">Here are your assigned details</p>
-    </div>
+<h4>Property: {{ property.name }}</h4>
+<p>Address: {{ property.address }}</p>
 
-    <div class="row g-4">
-        <!-- Property Card -->
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 h-100">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">🏠 Property</h5>
-                    <hr>
-                    {% if tenant_property %}
-                        <p class="mb-1"><strong>{{ tenant_property.name }}</strong></p>
-                        <p class="text-muted">{{ tenant_property.address }}</p>
-                    {% else %}
-                        <p class="text-danger">No property assigned yet.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+<h5>Stats</h5>
+<ul>
+  <li>Total Appliances: {{ stats.total_appliances }}</li>
+  <li>Working: {{ stats.working }}</li>
+  <li>Expiring Soon: {{ stats.expiring_soon }}</li>
+</ul>
 
-        <!-- Floor Card -->
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 h-100">
-                <div class="card-body">
-                    <h5 class="card-title text-success">🏢 Floor</h5>
-                    <hr>
-                    {% if tenant_floor %}
-                        <p>Floor Number: <strong>{{ tenant_floor.floor_number }}</strong></p>
-                    {% else %}
-                        <p class="text-muted">Not assigned</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Location Card -->
-        <div class="col-md-12">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-body">
-                    <h5 class="card-title text-warning">📍 Location</h5>
-                    <hr>
-                    {% if tenant_flat or tenant_room %}
-                        <p>
-                            {% if tenant_flat %} <strong>Flat:</strong> {{ tenant_flat }} {% endif %}
-                            {% if tenant_room %} <span class="ms-3"><strong>Room:</strong> {{ tenant_room }}</span> {% endif %}
-                        </p>
-                    {% else %}
-                        <p class="text-muted">No flat/room assigned.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logout Button -->
-    <div class="text-center mt-5">
-        <a href="/logout" class="btn btn-outline-danger px-4 py-2 rounded-pill">🚪 Logout</a>
-    </div>
-</div>
-{% endblock %}
+<h5>Appliances</h5>
+{% if appliances %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Model</th>
+        <th>Status</th>
+        <th>Warranty</th>
+        <th>Location</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for app in appliances %}
+      <tr>
+        <td>{{ app.name }}</td>
+        <td>{{ app.model }}</td>
+        <td>{{ app.status }}</td>
+        <td>{{ app.warranty_expiry or "N/A" }}</td>
+        <td>{{ app.location or "N/A" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No appliances added yet.</p>
+{% endif %}

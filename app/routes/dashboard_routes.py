@@ -221,11 +221,14 @@ def get_dashboard(
             "expiry_alerts": expiry_alerts,
             "today": today
         })
+
     elif user.role == "tenant":
-        # --- TENANT LOGIC (fixed) ---
-        tenant_property = db.query(Property).filter(
-            Property.id == user.property_id).first() if user.property_id else None
+        tenant_property = db.query(Property).filter(Property.id == user.property_id).first()
         tenant_floor = db.query(Floor).filter(Floor.id == user.floor_id).first() if user.floor_id else None
+
+        # Get appliances for tenant's property
+        appliances = db.query(Appliance).filter(
+            Appliance.property_id == user.property_id).all() if user.property_id else []
 
         return templates.TemplateResponse("dashboard_tenant.html", {
             "request": request,
@@ -233,7 +236,8 @@ def get_dashboard(
             "tenant_property": tenant_property,
             "tenant_floor": tenant_floor,
             "tenant_flat": user.flat_no,
-            "tenant_room": user.room_no
+            "tenant_room": user.room_no,
+            "appliances": appliances
         })
 
 

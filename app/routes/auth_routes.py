@@ -184,6 +184,8 @@ def activate_account_form(request: Request, token: str, db: Session = Depends(ge
         "email": pending.email
     })
 
+from datetime import date, timedelta
+
 @router.post("/activate/{token}", response_class=HTMLResponse)
 def activate_tenant(request: Request, token: str,
                     name: str = Form(...),
@@ -217,10 +219,31 @@ def activate_tenant(request: Request, token: str,
         phone=phone
     )
 
-    # 🎉 Show success page
-    return templates.TemplateResponse("activation_success.html", {
+    # 🔹 Fetch the property assigned to this tenant
+    property_obj = db.query(Property).filter(Property.id == tenant_user.property_id).first()
+
+    # 🔹 Fetch appliances for this property
+    appliances = db.query(Appliance).filter(Appliance.property_id == property_obj.id).all()
+
+    # 🔹 Prepare stats
+    total_appliances = len(appliances)
+    working_count = len([a for a in appliances if a.status and a.status.lower() == "working"])
+    expiring_soon_count = len([
+        a for a in appliances
+        if a.warranty_expiry and a.warranty_expiry <= date.today() + timedelta(days=30)
+    ])
+
+    # 🎉 Show tenant dashboard instead of simple success page
+    return templates.TemplateResponse("tenant_dashboard.html", {
         "request": request,
-        "name": tenant_user.name
+        "user": tenant_user,
+        "property": property_obj,
+        "appliances": appliances,
+        "stats": {
+            "total_appliances": total_appliances,
+            "working": working_count,
+            "expiring_soon": expiring_soon_count
+        }
     })
 
 
