@@ -3,7 +3,6 @@ import os
 import random
 import requests
 from passlib.context import CryptContext
-from dotenv import load_dotenv
 from datetime import datetime
 from fastapi import Depends, Request, HTTPException
 from sqlalchemy.orm import Session
@@ -11,14 +10,13 @@ from app.database import get_db
 from app import models
 
 # --------------------------
-# Load environment variables
+# Constants for email sending
 # --------------------------
-load_dotenv()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 
-# Strip any extra spaces from PUBLIC_URL
-PUBLIC_URL = os.getenv("PUBLIC_URL", "http://127.0.0.1:8000").strip()
+# Force hosted URL (ignore .env)
+HOSTED_URL = "https://property-management-api-e08h.onrender.com"
 
 # --------------------------
 # Password hashing
@@ -85,7 +83,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
 # Send activation email
 # --------------------------
 def send_activation_email(to_email: str, token: str):
-    activation_link = f"{PUBLIC_URL}/activate/{token}"
+    activation_link = f"{HOSTED_URL}/activate/{token}"
 
     subject = "Activate Your Tenant Account"
     body = f"""
