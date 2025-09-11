@@ -16,7 +16,9 @@ from app import models
 load_dotenv()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
-PUBLIC_URL = os.getenv("PUBLIC_URL", "http://127.0.0.1:8000")# Must match your verified sender email
+
+# Strip any extra spaces from PUBLIC_URL
+PUBLIC_URL = os.getenv("PUBLIC_URL", "http://127.0.0.1:8000").strip()
 
 # --------------------------
 # Password hashing
@@ -24,11 +26,9 @@ PUBLIC_URL = os.getenv("PUBLIC_URL", "http://127.0.0.1:8000")# Must match your v
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    """Hash a plain password"""
     return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against the hashed password"""
     return pwd_context.verify(plain_password, hashed_password)
 
 # --------------------------
@@ -40,7 +40,6 @@ def generate_otp(length: int = 6) -> str:
     return str(random.randint(10**(length-1), 10**length - 1))
 
 def send_otp_email(to_email: str, otp: str) -> bool:
-    """Send OTP email using Brevo API"""
     try:
         url = "https://api.brevo.com/v3/smtp/email"
         headers = {
@@ -62,7 +61,6 @@ def send_otp_email(to_email: str, otp: str) -> bool:
         return False
 
 def verify_otp(user, input_otp: str) -> bool:
-    """Verify if user's OTP is correct and not expired"""
     if not user.otp or not user.otp_expiry:
         return False
     if user.otp != input_otp:
@@ -71,7 +69,6 @@ def verify_otp(user, input_otp: str) -> bool:
         return False
     return True
 
-#
 # --------------------------
 # Get current user (session-based)
 # --------------------------
@@ -84,11 +81,9 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
-# utils.py
-
-# utils.py
-
-
+# --------------------------
+# Send activation email
+# --------------------------
 def send_activation_email(to_email: str, token: str):
     activation_link = f"{PUBLIC_URL}/activate/{token}"
 
@@ -106,23 +101,22 @@ def send_activation_email(to_email: str, token: str):
     Property Management Team
     """
 
-    # Send email via Brevo
-    url = "https://api.brevo.com/v3/smtp/email"
-    headers = {
-        "accept": "application/json",
-        "api-key": BREVO_API_KEY,
-        "content-type": "application/json"
-    }
-    payload = {
-        "sender": {"name": "Property Management", "email": SENDER_EMAIL},
-        "to": [{"email": to_email}],
-        "subject": subject,
-        "htmlContent": f"<html><body><p>{body.replace(chr(10), '<br>')}</p></body></html>"
-    }
     try:
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "api-key": BREVO_API_KEY,
+            "content-type": "application/json"
+        }
+        payload = {
+            "sender": {"name": "Property Management", "email": SENDER_EMAIL},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "htmlContent": f"<html><body><p>{body.replace(chr(10), '<br>')}</p></body></html>"
+        }
         response = requests.post(url, headers=headers, json=payload)
         print(f"Brevo API Response [{response.status_code}]: {response.text}")
-        print(f"✅ Activation link sent: {activation_link}")  # Debug print
+        print(f"✅ Activation link sent: {activation_link}")
         return response.status_code in [200, 201]
     except Exception as e:
         print(f"❌ Exception while sending activation email: {e}")
