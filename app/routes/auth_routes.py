@@ -211,18 +211,36 @@ def activate_tenant(request: Request, token: str,
             "error": "Passwords do not match"
         })
 
-    # ✅ Activate tenant
-    tenant_user = crud.activate_tenant(
-        db,
-        pending_tenant=pending,
-        password=password,
-        name=name,
-        phone=phone
+    # ✅ Create User directly here
+    existing_user = crud.get_user_by_email(db, pending.email)
+    if existing_user:
+        return templates.TemplateResponse("activate_tenant.html", {
+            "request": request,
+            "token": token,
+            "email": pending.email,
+            "error": "User with this email already exists."
+        })
+
+    # Create tenant user
+    tenant_user = User(
+        username=name,
+        email=pending.email,
+        phone=phone,
+        role="tenant",
+        password_hash=hash_password(password),
+        is_verified=True
     )
-# 🔹 Redirect tenant to register page with pre-filled email
-    return RedirectResponse(
-        url=f"/register?email={tenant_user.email}",
-        status_code=302
-    )
+    db.add(tenant_user)
+
+    # Mark pending tenant as activated
+    pending.is_activated = True
+    db.commit()
+
+    # Auto-login tenant (optional)
+    request.session["user_id"] = tenant_user.id
+    request.session["username"] = tenant_user.username
+    request.session["role"] = tenant_user.role
+
+    return RedirectResponse(url="/dashboard", status_code=302)
 
 
