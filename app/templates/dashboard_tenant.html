@@ -1,68 +1,11 @@
-<!-- app/templates/dashboard_tenant.html -->
+<h2>Welcome, {{ user.username }}</h2>
 
-<h2>Welcome {{ user.name }}!</h2>
-
-{% if tenant_property %}
-  <h4>Property: {{ tenant_property.name }}</h4>
-  <p>Address: {{ tenant_property.address }}</p>
-{% endif %}
-
-{% if tenant_floor %}
-  <h5>Floor: {{ tenant_floor.name }}</h5>
-{% endif %}
-
-{% if tenant_flat %}
-  <p>Flat No: {{ tenant_flat }}</p>
-{% endif %}
-
-{% if tenant_room %}
-  <p>Room No: {{ tenant_room }}</p>
-{% endif %}
-
-<h5>Stats</h5>
-<ul>
-  <li>Total Appliances: {{ total_appliance_count }}</li>
-  <li>Expiring Soon: {{ appliances_expiring_count }}</li>
-</ul>
-
-<h5>Appliances</h5>
-{% if appliances %}
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Model</th>
-        <th>Status</th>
-        <th>Warranty</th>
-        <th>Location</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for app in appliances %}
-      <tr>
-        <td>{{ app.name }}</td>
-        <td>{{ app.model }}</td>
-        <td>{{ app.status }}</td>
-        <td>{{ app.warranty_expiry or "N/A" }}</td>
-        <td>{{ app.location or "N/A" }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+{% if property %}
+  <h3>Your Assigned Property:</h3>
+  <p>Name: {{ property.name }}</p>
+  <p>Address: {{ property.address }}</p>
+  {% if user.flat_no %}<p>Flat No: {{ user.flat_no }}</p>{% endif %}
+  {% if user.room_no %}<p>Room No: {{ user.room_no }}</p>{% endif %}
 {% else %}
-  <p>No appliances added yet.</p>
-{% endif %}
-
-{% if expiry_alerts %}
-  <h5>⚠️ Expiry Alerts</h5>
-  <ul>
-    {% for alert in expiry_alerts %}
-      <li>
-        {{ alert.name }} ({{ alert.model }}) in {{ alert.property_name }}
-        {% if alert.floor_name %} → Floor: {{ alert.floor_name }}{% endif %}
-        – <strong>{{ alert.status }}</strong>
-        (Expiry: {{ alert.expiry }})
-      </li>
-    {% endfor %}
-  </ul>
+  <p>No property assigned yet.</p>
 {% endif %}

@@ -229,6 +229,7 @@ def activate_tenant(
         phone=phone,
         role="tenant",
         password_hash=hash_password(password),
+        property_id=pending.property_id,
         is_verified=True
         )
     db.add(tenant_user)
