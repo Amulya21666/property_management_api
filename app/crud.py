@@ -220,12 +220,15 @@ def create_pending_tenant(db: Session, name: str, email: str, property_id: int =
     return tenant
 
 def activate_tenant(db: Session, pending_tenant, password: str, name: str, phone: str):
-    """Convert PendingTenant → User (tenant)"""
+    """Convert PendingTenant -> User (tenant). Ensures property_id is copied and user row is committed/refreshed."""
     hashed_password = hash_password(password)
+
+    # create the user with the tenant's assigned property_id from the pending invite
     tenant_user = User(
-        username=pending_tenant.email,
-        name=name,          # store tenant’s name
-        email=pending_tenant.email,        # store tenant’s phone number
+        username=name,                       # use provided name for username
+        name=name,                           # optional: store full name if you have this column (adjust to your model)
+        email=pending_tenant.email,
+        phone=phone,
         password_hash=hashed_password,
         role="tenant",
         property_id=pending_tenant.property_id,
@@ -234,7 +237,11 @@ def activate_tenant(db: Session, pending_tenant, password: str, name: str, phone
         is_verified=True
     )
     db.add(tenant_user)
+
+    # mark the pending invite as activated and clear token (optional)
     pending_tenant.is_activated = True
+    pending_tenant.activation_token = None
+
     db.commit()
     db.refresh(tenant_user)
     return tenant_user

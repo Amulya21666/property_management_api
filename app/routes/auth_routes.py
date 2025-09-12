@@ -165,28 +165,35 @@ def invite_tenant_post(request: Request, name: str = Form(...), email: str = For
 
     send_activation_email(email, pending.activation_token)
     return RedirectResponse("/owner/invite_tenant_page", status_code=303)
-
 @router.get("/activate/{token}", response_class=HTMLResponse)
 def activate_account_form(request: Request, token: str, db: Session = Depends(get_db)):
     token = token.strip()
     pending = db.query(PendingTenant).filter(
-        PendingTenant.activation_token == token,
-        PendingTenant.is_activated == False
+        PendingTenant.activation_token == token
     ).first()
 
     if not pending:
-        return HTMLResponse(content="<h3>❌ Invalid or expired activation link.</h3>", status_code=400)
+        return HTMLResponse(content="<h3>❌ Invalid activation link.</h3>", status_code=400)
 
-    # Show registration form for tenant
+    # ✅ If already activated → redirect tenant to dashboard (or issues page)
+    if pending.is_activated:
+        tenant_user = db.query(User).filter(User.email == pending.email).first()
+        if tenant_user:
+            # auto-login for convenience
+            request.session["user_id"] = tenant_user.id
+            request.session["username"] = tenant_user.username
+            request.session["role"] = tenant_user.role
+            return RedirectResponse(url="/tenant/dashboard", status_code=303)
+
+    # ✅ Otherwise → show registration form
     return templates.TemplateResponse("activate_tenant.html", {
         "request": request,
         "token": token,
         "email": pending.email
     })
 
-
 @router.post("/activate/{token}", response_class=HTMLResponse)
-def activate_tenant(
+def activate_tenant_post(
     request: Request,
     token: str,
     name: str = Form(...),
@@ -222,29 +229,35 @@ def activate_tenant(
             "error": "User with this email already exists."
         })
 
-    # ✅ Create tenant user
-    tenant_user = User(
-        username=name,
-        email=pending.email,
-        phone=phone,
-        role="tenant",
-        password_hash=hash_password(password),
-        property_id=pending.property_id,
-        is_verified=True
-        )
-    db.add(tenant_user)
-    db.commit()
-    db.refresh(tenant_user)
+    # ✅ Use CRUD helper to create tenant properly
+    tenant_user = crud.activate_tenant(
+        db=db,
+        pending_tenant=pending,
+        password=password,
+        name=name,
+        phone=phone
+    )
 
-    # ✅ Mark pending tenant as activated + clear token
-    pending.is_activated = True
-    pending.activation_token = None
-    db.commit()
-
-    # Auto-login tenant (optional)
+    # ✅ Auto-login tenant
     request.session["user_id"] = tenant_user.id
     request.session["username"] = tenant_user.username
     request.session["role"] = tenant_user.role
 
-    # ✅ Redirect tenant to **their dashboard**
     return RedirectResponse(url="/tenant/dashboard", status_code=303)
+
+
+@router.get("/tenant/dashboard", response_class=HTMLResponse)
+def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if user.role != "tenant":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Fetch the tenant's assigned property
+    property = None
+    if user.property_id:
+        property = db.query(Property).filter(Property.id == user.property_id).first()
+
+    return templates.TemplateResponse("dashboard_tenant.html", {
+        "request": request,
+        "user": user,
+        "property": property
+    })
