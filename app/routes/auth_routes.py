@@ -229,8 +229,8 @@ def activate_tenant(
         phone=phone,
         role="tenant",
         password_hash=hash_password(password),
-        is_active=True
-    )
+        is_verified=True
+        )
     db.add(tenant_user)
     db.commit()
     db.refresh(tenant_user)
