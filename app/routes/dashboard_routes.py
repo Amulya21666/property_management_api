@@ -124,7 +124,6 @@ async def add_appliance(
     )
 
     return RedirectResponse(url="/dashboard", status_code=HTTP_303_SEE_OTHER)
-
 @router.get("/dashboard", response_class=HTMLResponse)
 def get_dashboard(
     request: Request,
@@ -134,7 +133,7 @@ def get_dashboard(
     today = datetime.today().date()
 
     if user.role == "owner":
-        # --- OWNER LOGIC (already correct) ---
+        # --- OWNER LOGIC ---
         properties = crud.get_properties_by_owner(db, user.id)
         total_properties_count = len(properties)
 
@@ -186,7 +185,7 @@ def get_dashboard(
         })
 
     elif user.role == "manager":
-        # --- MANAGER LOGIC (already correct) ---
+        # --- MANAGER LOGIC ---
         assigned_properties = crud.get_properties_assigned_to_manager(db, user.id)
         appliances_per_property = {}
         expiry_alerts = []
@@ -222,8 +221,7 @@ def get_dashboard(
             "today": today
         })
 
-
-        if user.role == "tenant":
+    elif user.role == "tenant":
         # --- TENANT LOGIC ---
         tenant_property = db.query(Property).filter(
             Property.id == user.property_id
@@ -288,27 +286,8 @@ def get_dashboard(
             }
         )
 
-        appliances_expiring_count = len(expiry_alerts)
-
-        return templates.TemplateResponse("dashboard_tenant.html", {
-            "request": request,
-            "user": user,
-            "tenant_property": tenant_property,
-            "tenant_floor": tenant_floor,
-            "tenant_flat": user.flat_no,
-            "tenant_room": user.room_no,
-            "appliances_per_property": appliances_per_property,
-            "appliances": appliances,  # ✅ safe even if empty
-            "expiry_alerts": expiry_alerts,
-            "total_appliance_count": total_appliance_count,
-            "appliances_expiring_count": appliances_expiring_count,
-            "today": today
-        })
-
     else:
         raise HTTPException(status_code=403, detail="Unauthorized")
-
-
 
 
 # ---------------------- OWNER PAGES ----------------------
