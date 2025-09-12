@@ -221,7 +221,6 @@ def get_dashboard(
             "expiry_alerts": expiry_alerts,
             "today": today
         })
-
     elif user.role == "tenant":
         # --- TENANT LOGIC ---
         tenant_property = db.query(Property).filter(Property.id == user.property_id).first()
@@ -231,13 +230,18 @@ def get_dashboard(
         expiry_alerts = []
         total_appliance_count = 0
 
+
         if tenant_property:
-            # Get all appliances for tenant's property
-            appliances = db.query(Appliance).filter(Appliance.property_id == tenant_property.id).all()
+            # Get appliances only in tenant's property (optionally filter by floor)
+            query = db.query(Appliance).filter(Appliance.property_id == tenant_property.id)
+            if tenant_floor:
+                query = query.filter(Appliance.floor_id == tenant_floor.id)
+            appliances = query.all()
+
             appliances_per_property[tenant_property.id] = appliances
             total_appliance_count = len(appliances)
 
-            # Check for warranty expiry alerts
+            # Prepare expiry alerts
             for appliance in appliances:
                 if appliance.warranty_expiry:
                     days_remaining = (appliance.warranty_expiry - today).days
@@ -245,11 +249,14 @@ def get_dashboard(
                     if status:
                         expiry_alerts.append({
                             "property_name": tenant_property.name,
+                            "floor_name": tenant_floor.name if tenant_floor else None,
                             "name": appliance.name,
                             "model": appliance.model,
                             "expiry": appliance.warranty_expiry,
                             "status": status
                         })
+
+        appliances_expiring_count = len(expiry_alerts)
 
         return templates.TemplateResponse("dashboard_tenant.html", {
             "request": request,
@@ -259,10 +266,13 @@ def get_dashboard(
             "tenant_flat": user.flat_no,
             "tenant_room": user.room_no,
             "appliances_per_property": appliances_per_property,
-            "total_appliance_count": total_appliance_count,
+            "appliances": appliances_per_property.get(tenant_property.id, []),
             "expiry_alerts": expiry_alerts,
+            "total_appliance_count": total_appliance_count,
+            "appliances_expiring_count": appliances_expiring_count,
             "today": today
         })
+
 
     else:
         raise HTTPException(status_code=403, detail="Unauthorized")
