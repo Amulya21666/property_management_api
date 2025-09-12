@@ -222,11 +222,16 @@ def get_dashboard(
             "today": today
         })
 
-    elif user.role == "tenant":
+
+        if user.role == "tenant":
         # --- TENANT LOGIC ---
         tenant_property = db.query(Property).filter(
-            Property.id == user.property_id).first() if user.property_id else None
-        tenant_floor = db.query(Floor).filter(Floor.id == user.floor_id).first() if user.floor_id else None
+            Property.id == user.property_id
+        ).first() if user.property_id else None
+
+        tenant_floor = db.query(Floor).filter(
+            Floor.id == user.floor_id
+        ).first() if user.floor_id else None
 
         appliances_per_property = {}
         expiry_alerts = []
@@ -236,10 +241,11 @@ def get_dashboard(
         if tenant_property:
             # Get appliances only in tenant's property (optionally filter by floor)
             query = db.query(Appliance).filter(Appliance.property_id == tenant_property.id)
+
             if tenant_floor:
                 query = query.filter(Appliance.floor_id == tenant_floor.id)
-            appliances = query.all()
 
+            appliances = query.all()
             appliances_per_property[tenant_property.id] = appliances
             total_appliance_count = len(appliances)
 
@@ -247,7 +253,13 @@ def get_dashboard(
             for appliance in appliances:
                 if appliance.warranty_expiry:
                     days_remaining = (appliance.warranty_expiry - today).days
-                    status = "expired" if days_remaining < 0 else ("expiring_soon" if days_remaining <= 30 else None)
+                    if days_remaining < 0:
+                        status = "expired"
+                    elif days_remaining <= 30:
+                        status = "expiring_soon"
+                    else:
+                        status = None
+
                     if status:
                         expiry_alerts.append({
                             "property_name": tenant_property.name,
@@ -257,6 +269,24 @@ def get_dashboard(
                             "expiry": appliance.warranty_expiry,
                             "status": status
                         })
+
+        return templates.TemplateResponse(
+            "tenant_dashboard.html",
+            {
+                "request": request,
+                "tenant_name": user.username,
+                "property": tenant_property,
+                "floor": tenant_floor,
+                "appliances": appliances,
+                "stats": {
+                    "total_appliances": total_appliance_count,
+                    "working": sum(1 for a in appliances if a.status == "working"),
+                    "expiring_soon": len(
+                        [a for a in appliances if a.warranty_expiry and 0 <= (a.warranty_expiry - today).days <= 30])
+                },
+                "expiry_alerts": expiry_alerts,
+            }
+        )
 
         appliances_expiring_count = len(expiry_alerts)
 
