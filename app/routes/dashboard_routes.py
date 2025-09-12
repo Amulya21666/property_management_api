@@ -666,18 +666,26 @@ def appliance_detail(request: Request, appliance_id: int, db: Session = Depends(
     })
 
 # dashboard_routes.py
-
+# ---------------------- TENANT ASSIGNMENT ---------------------- #
 @router.get("/assign_tenant_page", response_class=HTMLResponse)
-def assign_tenant_page(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def assign_tenant_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
     if user.role != "owner":
         raise HTTPException(status_code=403, detail="Only owners can assign tenants.")
 
-    # Show all tenants in the system
+    # ✅ Get all tenants (not yet assigned or all, depending on your CRUD)
     tenants = crud.get_all_tenants(db)
 
+    # ✅ Get only this owner's properties
     properties = crud.get_properties_by_owner(db, user.id)
 
-    floors_per_property = {p.id: crud.get_floors_by_property(db, p.id) for p in properties}
+    # ✅ Collect floors for each property
+    floors_per_property = {
+        p.id: crud.get_floors_by_property(db, p.id) for p in properties
+    }
 
     return templates.TemplateResponse("assign_tenant.html", {
         "request": request,
