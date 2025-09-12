@@ -166,7 +166,6 @@ def invite_tenant_post(request: Request, name: str = Form(...), email: str = For
     send_activation_email(email, pending.activation_token)
     return RedirectResponse("/owner/invite_tenant_page", status_code=303)
 
-
 @router.get("/activate/{token}", response_class=HTMLResponse)
 def activate_account_form(request: Request, token: str, db: Session = Depends(get_db)):
     token = token.strip()
@@ -178,22 +177,24 @@ def activate_account_form(request: Request, token: str, db: Session = Depends(ge
     if not pending:
         return HTMLResponse(content="<h3>❌ Invalid or expired activation link.</h3>", status_code=400)
 
-    # Show password creation form
+    # Show registration form for tenant
     return templates.TemplateResponse("activate_tenant.html", {
         "request": request,
         "token": token,
         "email": pending.email
     })
 
-from datetime import date, timedelta
 
 @router.post("/activate/{token}", response_class=HTMLResponse)
-def activate_tenant(request: Request, token: str,
-                    name: str = Form(...),
-                    phone: str = Form(...),
-                    password: str = Form(...),
-                    confirm_password: str = Form(...),
-                    db: Session = Depends(get_db)):
+def activate_tenant(
+    request: Request,
+    token: str,
+    name: str = Form(...),
+    phone: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
     token = token.strip()
     pending = db.query(PendingTenant).filter(
         PendingTenant.activation_token == token,
@@ -211,7 +212,7 @@ def activate_tenant(request: Request, token: str,
             "error": "Passwords do not match"
         })
 
-    # ✅ Create User directly here
+    # Check duplicate email
     existing_user = crud.get_user_by_email(db, pending.email)
     if existing_user:
         return templates.TemplateResponse("activate_tenant.html", {
@@ -221,19 +222,22 @@ def activate_tenant(request: Request, token: str,
             "error": "User with this email already exists."
         })
 
-    # Create tenant user
+    # ✅ Create tenant user
     tenant_user = User(
         username=name,
         email=pending.email,
         phone=phone,
         role="tenant",
-        password_hash=hash_password(password),
-        is_verified=True
+        password=hash_password(password),
+        is_active=True
     )
     db.add(tenant_user)
+    db.commit()
+    db.refresh(tenant_user)
 
-    # Mark pending tenant as activated
+    # ✅ Mark pending tenant as activated + clear token
     pending.is_activated = True
+    pending.activation_token = None
     db.commit()
 
     # Auto-login tenant (optional)
@@ -241,6 +245,5 @@ def activate_tenant(request: Request, token: str,
     request.session["username"] = tenant_user.username
     request.session["role"] = tenant_user.role
 
-    return RedirectResponse(url="/dashboard", status_code=302)
-
-
+    # ✅ Redirect tenant to **their dashboard**
+    return RedirectResponse(url="/tenant/dashboard", status_code=303)
