@@ -228,7 +228,7 @@ def activate_tenant(
         email=pending.email,
         phone=phone,
         role="tenant",
-        password=hash_password(password),
+        hashed_password=hash_password(password),
         is_active=True
     )
     db.add(tenant_user)
