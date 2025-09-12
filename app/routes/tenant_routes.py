@@ -1,6 +1,11 @@
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+
+from fastapi import APIRouter, Request, Depends
+from sqlalchemy.orm import Session         # ← needed
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from app.database import get_db
+from app.models import User
+
 
 templates = Jinja2Templates(directory="app/templates")
 
