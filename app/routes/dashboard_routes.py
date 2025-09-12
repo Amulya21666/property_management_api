@@ -221,15 +221,17 @@ def get_dashboard(
             "expiry_alerts": expiry_alerts,
             "today": today
         })
+
     elif user.role == "tenant":
         # --- TENANT LOGIC ---
-        tenant_property = db.query(Property).filter(Property.id == user.property_id).first()
+        tenant_property = db.query(Property).filter(
+            Property.id == user.property_id).first() if user.property_id else None
         tenant_floor = db.query(Floor).filter(Floor.id == user.floor_id).first() if user.floor_id else None
 
         appliances_per_property = {}
         expiry_alerts = []
         total_appliance_count = 0
-
+        appliances = []
 
         if tenant_property:
             # Get appliances only in tenant's property (optionally filter by floor)
@@ -266,13 +268,12 @@ def get_dashboard(
             "tenant_flat": user.flat_no,
             "tenant_room": user.room_no,
             "appliances_per_property": appliances_per_property,
-            "appliances": appliances_per_property.get(tenant_property.id, []),
+            "appliances": appliances,  # ✅ safe even if empty
             "expiry_alerts": expiry_alerts,
             "total_appliance_count": total_appliance_count,
             "appliances_expiring_count": appliances_expiring_count,
             "today": today
         })
-
 
     else:
         raise HTTPException(status_code=403, detail="Unauthorized")
