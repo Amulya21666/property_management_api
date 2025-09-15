@@ -259,5 +259,7 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
     return templates.TemplateResponse("dashboard_tenant.html", {
         "request": request,
         "user": user,
-        "property": property
+        "property": property,
+        "appliance": appliance
+
     })
