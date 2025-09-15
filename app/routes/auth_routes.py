@@ -166,40 +166,24 @@ def invite_tenant_post(request: Request, name: str = Form(...), email: str = For
     send_activation_email(email, pending.activation_token)
     return RedirectResponse("/owner/invite_tenant_page", status_code=303)
 
+
 @router.get("/activate/{token}", response_class=HTMLResponse)
 def activate_account_form(request: Request, token: str, db: Session = Depends(get_db)):
     token = token.strip()
-
-    # 🔍 Check if token exists
     pending = db.query(PendingTenant).filter(
-        PendingTenant.activation_token == token
+        PendingTenant.activation_token == token,
+        PendingTenant.is_activated == False
     ).first()
 
     if not pending:
-        return HTMLResponse(
-            content="<h3>❌ Invalid or expired activation link.</h3>",
-            status_code=400
-        )
+        return HTMLResponse(content="<h3>❌ Invalid or expired activation link.</h3>", status_code=400)
 
-    # ✅ If already activated → redirect tenant to dashboard
-    if pending.is_activated:
-        tenant_user = db.query(User).filter(User.email == pending.email).first()
-        if tenant_user:
-            # Auto-login
-            request.session["user_id"] = tenant_user.id
-            request.session["username"] = tenant_user.username
-            request.session["role"] = tenant_user.role
-            return RedirectResponse(url="/tenant/dashboard", status_code=303)
-
-        return HTMLResponse(
-            content="<h3>✅ Account already activated. Please <a href='/login'>login here</a>.</h3>"
-        )
-
-    # ✅ Otherwise → show registration form
-    return templates.TemplateResponse("activate_tenant.html", {
+    # Show register form with tenant info pre-filled
+    return templates.TemplateResponse("register.html", {
         "request": request,
-        "token": token,
-        "email": pending.email
+        "email": pending.email,
+        "role": "tenant",
+        "token": token
     })
 
 @router.post("/activate/{token}", response_class=HTMLResponse)
