@@ -184,25 +184,45 @@ def invite_tenant_page(request: Request, db: Session = Depends(get_db), user=Dep
         "pending_tenants": pending_tenants
     })
 
-
 @router.post("/owner/invite_tenant")
-def invite_tenant_post(request: Request, name: str = Form(...), email: str = Form(...),
-                       property_id: int = Form(...), flat_no: str = Form(None), room_no: str = Form(None),
-                       db: Session = Depends(get_db), user=Depends(get_current_user)):
-
+def invite_tenant_post(
+    request: Request,
+    name: str = Form(...),
+    email: str = Form(...),
+    property_id: int = Form(...),
+    flat_no: str = Form(None),
+    room_no: str = Form(None),
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
     if user.role != "owner":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Check if already invited
-    existing = db.query(PendingTenant).filter_by(email=email, is_activated=False).first()
+    # Check if tenant already exists
+    existing = db.query(User).filter_by(email=email).first()
     if existing:
-        return {"error": "Tenant already invited."}
+        return {"error": "Tenant already exists."}
 
-    pending = crud.create_pending_tenant(db, name=name, email=email,
-                                         property_id=property_id, flat_no=flat_no, room_no=room_no)
+    # Create tenant directly as verified
+    hashed_password = "default_password_hash_here"  # Optional: generate a random password or default
+    new_tenant = User(
+        username=email.split("@")[0],  # or some logic for username
+        name=name,
+        email=email,
+        role="tenant",
+        is_verified=True,      # ✅ mark tenant as verified immediately
+        password_hash=hashed_password,
+        property_id=property_id,
+        flat_no=flat_no,
+        room_no=room_no
+    )
 
-    send_activation_email(email, pending.activation_token)
+    db.add(new_tenant)
+    db.commit()
+
+    # No need to send activation email
     return RedirectResponse("/owner/invite_tenant_page", status_code=303)
+
 
 
 @router.get("/activate/{token}", response_class=HTMLResponse)
