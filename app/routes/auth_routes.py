@@ -74,7 +74,7 @@ def register_post(request: Request,
         user = User(
             username=username,
             email=email,
-            hashed_password=hash_password(password),
+            password_hash=hash_password(password),
             role=role,
             property_id=pending.property_id,
             floor_id=pending.floor_id  # if floor is assigned
