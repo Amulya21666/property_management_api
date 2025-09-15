@@ -49,7 +49,6 @@ def logout(request: Request):
 def register_get(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-
 @router.post("/register")
 def register_post(request: Request,
                   username: str = Form(...),
@@ -58,24 +57,33 @@ def register_post(request: Request,
                   role: str = Form(...),
                   db: Session = Depends(get_db)):
 
-    # Check if username or email already exists
-    if crud.get_user_by_username(db, username) or crud.get_user_by_email(db, email):
-        return templates.TemplateResponse("register.html", {"request": request, "error": "Username or email already exists."})
-
-    # Tenant → skip OTP, direct registration
+    # For tenants: check PendingTenant table instead of full User table
     if role.lower() == "tenant":
+        pending = db.query(PendingTenant).filter(
+            PendingTenant.email == email,
+            PendingTenant.is_activated == False
+        ).first()
+
+        if not pending:
+            return templates.TemplateResponse("register.html", {
+                "request": request,
+                "error": "Invalid registration or already registered."
+            })
+
+        # Create tenant user
         crud.create_user(db=db, username=username, email=email, role=role, password=password)
 
-        # If using PendingTenant table, mark tenant as activated
-        pending = db.query(PendingTenant).filter(PendingTenant.email == email).first()
-        if pending:
-            pending.is_activated = True
-            db.commit()
+        # Mark tenant as activated
+        pending.is_activated = True
+        db.commit()
 
         return RedirectResponse(url="/login", status_code=302)
 
-    # Owner/Manager → send OTP
+    # Owner/Manager → OTP flow
     else:
+        if crud.get_user_by_username(db, username) or crud.get_user_by_email(db, email):
+            return templates.TemplateResponse("register.html", {"request": request, "error": "Username or email already exists."})
+
         otp_code = str(random.randint(100000, 999999))
         otp_expiry = datetime.utcnow() + timedelta(minutes=5)
 
