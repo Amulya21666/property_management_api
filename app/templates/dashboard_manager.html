@@ -334,6 +334,13 @@ body {
                   <a href="{{ url_for('edit_appliance_page', appliance_id=app.id) }}" class="btn btn-sm btn-success">
                     <i class="bi bi-pencil-square"></i> Edit
                   </a>
+                  <a href="/manager/issues" class="text-decoration-none">
+  <div class="action-card">
+      <div class="action-card-icon text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="action-card-text">View Reported Issues</div>
+  </div>
+</a>
+
                   {% endif %}
                 </div>
 

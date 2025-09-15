@@ -328,20 +328,49 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
     })
 
 
+
 @router.post("/tenant/report_issue/{appliance_id}")
 def report_issue(appliance_id: int, description: str = Form(...), db: Session = Depends(get_db), user=Depends(get_current_user)):
     appliance = db.query(Appliance).filter(Appliance.id == appliance_id).first()
     if not appliance:
-        return RedirectResponse(url="/tenant/dashboard", status_code=302)
+        raise HTTPException(status_code=404, detail="Appliance not found")
 
-    # Create a new Issue
     issue = Issue(
         description=description,
-        tenant_id=user.id,
+        reported_by_id=user.id,
         property_id=appliance.property_id,
         appliance_id=appliance.id,
-        status="pending"
+        status="Pending"
     )
     db.add(issue)
     db.commit()
-    return RedirectResponse(url="/tenant/dashboard", status_code=302)
+    db.refresh(issue)
+
+@router.get("/owner/issues")
+def owner_issues(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if user.role != "owner":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    issues = db.query(Issue).join(Property).filter(Property.owner_id == user.id).all()
+    return templates.TemplateResponse(
+        "owner_issues.html",
+        {"request": {}, "issues": issues, "user": user}
+    )
+
+
+@router.get("/manager/issues")
+def manager_issues(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if user.role != "manager":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Fetch only issues from properties assigned to this manager
+    issues = (
+        db.query(Issue)
+        .join(Property)
+        .filter(Property.manager_id == user.id)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        "manager_issues.html",
+        {"request": {}, "issues": issues, "user": user}
+    )
