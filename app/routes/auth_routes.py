@@ -203,22 +203,25 @@ def invite_tenant_post(
     if existing:
         return {"error": "Tenant already exists."}
 
-    # Create tenant directly
-    hashed_password = hash_password("default_password123")  # or generate random
-    new_tenant = User(
-        username=name,
+    # Create PendingTenant with activation token
+    import uuid
+    activation_token = str(uuid.uuid4())
+    pending = PendingTenant(
+        name=name,
         email=email,
-        role="tenant",
-        is_verified=True,  # ✅ tenant is verified immediately
-        password_hash=hashed_password,
         property_id=property_id,
         flat_no=flat_no,
-        room_no=room_no
+        room_no=room_no,
+        activation_token=activation_token,
+        is_activated=False
     )
-    db.add(new_tenant)
+    db.add(pending)
     db.commit()
+    db.refresh(pending)
 
-    # Optional: send email with password or notification
+    # Send activation email
+    send_activation_email(email, activation_token)
+
     return RedirectResponse("/owner/invite_tenant_page", status_code=303)
 
 
