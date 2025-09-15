@@ -20,7 +20,7 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db)):
     # Fetch current user from DB
     current_user = db.query(User).filter(User.id == user_id).first()
 
-    return templates.TemplateResponse("dashboard_tenant.html", {
+    return templates.TemplateResponse("tenant_dashboard.html", {
         "request": request,
         "user": current_user
     })

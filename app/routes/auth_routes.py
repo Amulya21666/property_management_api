@@ -281,7 +281,7 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
         property = db.query(Property).filter(Property.id == user.property_id).first()
         appliances = db.query(Appliance).filter(Appliance.property_id == user.property_id).all()
 
-    return templates.TemplateResponse("dashboard_tenant.html", {
+    return templates.TemplateResponse("tenant_dashboard.html", {
         "request": request,
         "user": user,
         "property": property,
