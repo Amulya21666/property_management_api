@@ -272,6 +272,8 @@ def get_dashboard(
             "tenant_dashboard.html",
             {
                 "request": request,
+                "user": user,
+
                 "tenant_name": user.username,
                 "property": tenant_property,
                 "floor": tenant_floor,
