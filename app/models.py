@@ -40,8 +40,13 @@ class User(Base):
     properties_owned = relationship("Property", back_populates="owner", foreign_keys="Property.owner_id")
     properties_managed = relationship("Property", back_populates="manager", foreign_keys="Property.manager_id")
     activity_logs = relationship("ActivityLog", back_populates="user_obj", cascade="all, delete-orphan")
-    tenant_queries = relationship("TenantQuery", back_populates="user")
-    issues_reported = relationship("Issue", back_populates="tenant", foreign_keys="Issue.tenant_id")
+
+    # Issues reported by tenant
+    issues_reported = relationship("Issue", back_populates="tenant", cascade="all, delete-orphan")
+
+    # Queries raised by tenant
+    tenant_queries = relationship("TenantQuery", back_populates="reported_by", cascade="all, delete-orphan")
+
 
 # ----------------------
 # Property model
@@ -64,10 +69,11 @@ class Property(Base):
 
     appliances = relationship("Appliance", back_populates="property", cascade="all, delete-orphan")
     floors = relationship("Floor", back_populates="property", cascade="all, delete-orphan")
-    tenant_queries = relationship("TenantQuery", back_populates="property")
-    issues = relationship("Issue", back_populates="property")
+    tenant_queries = relationship("TenantQuery", back_populates="property", cascade="all, delete-orphan")
+    issues = relationship("Issue", back_populates="property", cascade="all, delete-orphan")
 
     __table_args__ = (UniqueConstraint('name', 'address', name='uix_name_address'),)
+
 
 # ----------------------
 # Floor model
@@ -84,6 +90,7 @@ class Floor(Base):
 
     property = relationship("Property", back_populates="floors")
     appliances = relationship("Appliance", back_populates="floor", cascade="all, delete-orphan")
+
 
 # ----------------------
 # Appliance model
@@ -110,6 +117,8 @@ class Appliance(Base):
     property = relationship("Property", back_populates="appliances")
     floor = relationship("Floor", back_populates="appliances")
     images = relationship("ApplianceImage", back_populates="appliance", cascade="all, delete-orphan")
+    queries = relationship("TenantQuery", back_populates="appliance", cascade="all, delete-orphan")
+
 
 # ----------------------
 # ApplianceImage model
@@ -123,6 +132,7 @@ class ApplianceImage(Base):
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
     appliance = relationship("Appliance", back_populates="images")
+
 
 # ----------------------
 # ActivityLog model
@@ -138,6 +148,7 @@ class ActivityLog(Base):
 
     user_obj = relationship("User", back_populates="activity_logs")
 
+
 # ----------------------
 # Vendor model
 # ----------------------
@@ -151,7 +162,8 @@ class Vendor(Base):
     rating = Column(Float, default=0.0)
     total_jobs = Column(Integer, default=0)
 
-    issues = relationship("Issue", back_populates="vendor")
+    issues = relationship("Issue", back_populates="vendor", cascade="all, delete-orphan")
+
 
 # ----------------------
 # Issue model
@@ -174,9 +186,11 @@ class Issue(Base):
     cost = Column(Float, nullable=True)
     bill_url = Column(String(255), nullable=True)
 
+    # Relationships
     tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
     property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
     vendor = relationship("Vendor", back_populates="issues", foreign_keys=[vendor_id])
+
 
 # ----------------------
 # TenantQuery model
@@ -187,16 +201,18 @@ class TenantQuery(Base):
     id = Column(Integer, primary_key=True, index=True)
     description = Column(String, nullable=False)
     status = Column(String, default="Pending")  # Pending, Resolved
-    reported_by_id = Column(Integer, ForeignKey("users.id"))  # Tenant who reported
-    property_id = Column(Integer, ForeignKey("properties.id"))  # Property related
-    appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)  # Optional
+    reported_by_id = Column(Integer, ForeignKey("users.id"))
+    property_id = Column(Integer, ForeignKey("properties.id"))
+    appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    reported_by = relationship("User", backref="issues_reported")
-    property = relationship("Property", backref="issues")
-    appliance = relationship("Appliance", backref="issues")
+    reported_by = relationship("User", back_populates="tenant_queries")
+    property = relationship("Property", back_populates="tenant_queries")
+    appliance = relationship("Appliance", back_populates="queries")
 
+
+# ----------------------
 # PendingTenant model
 # ----------------------
 class PendingTenant(Base):
