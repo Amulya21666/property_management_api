@@ -255,7 +255,6 @@ def activate_tenant_post(
 
     return RedirectResponse(url="/tenant/dashboard", status_code=303)
 
-
 @router.get("/tenant/dashboard", response_class=HTMLResponse)
 def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
     if user.role != "tenant":
@@ -263,13 +262,15 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
 
     # Fetch the tenant's assigned property
     property = None
+    appliances = []
     if user.property_id:
         property = db.query(Property).filter(Property.id == user.property_id).first()
+        appliances = db.query(Appliance).filter(Appliance.property_id == user.property_id).all()
 
     return templates.TemplateResponse("dashboard_tenant.html", {
         "request": request,
         "user": user,
         "property": property,
         "appliances": appliances
-
     })
+
