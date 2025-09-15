@@ -203,25 +203,24 @@ def invite_tenant_post(
     if existing:
         return {"error": "Tenant already exists."}
 
-    # Create tenant directly as verified
-    hashed_password = "default_password_hash_here"  # Optional: generate a random password or default
+    # Create tenant directly
+    hashed_password = hash_password("default_password123")  # or generate random
     new_tenant = User(
-        username=email.split("@")[0],  # or some logic for username
-        name=name,
+        username=name,
         email=email,
         role="tenant",
-        is_verified=True,      # ✅ mark tenant as verified immediately
+        is_verified=True,  # ✅ tenant is verified immediately
         password_hash=hashed_password,
         property_id=property_id,
         flat_no=flat_no,
         room_no=room_no
     )
-
     db.add(new_tenant)
     db.commit()
 
-    # No need to send activation email
+    # Optional: send email with password or notification
     return RedirectResponse("/owner/invite_tenant_page", status_code=303)
+
 
 
 
