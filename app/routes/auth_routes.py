@@ -346,31 +346,42 @@ def report_issue(appliance_id: int, description: str = Form(...), db: Session = 
     db.commit()
     db.refresh(issue)
 
+from fastapi import Request
+
 @router.get("/owner/issues")
-def owner_issues(db: Session = Depends(get_db), user=Depends(get_current_user)):
+def owner_issues(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
     if user.role != "owner":
         raise HTTPException(status_code=403, detail="Not authorized")
-    issues = db.query(Issue).join(Property).filter(Property.owner_id == user.id).all()
+
+    # Get issues for properties owned by this owner
+    issues = (
+        db.query(TenantQuery)
+        .join(Property, TenantQuery.property_id == Property.id)
+        .filter(Property.owner_id == user.id)
+        .all()
+    )
+
     return templates.TemplateResponse(
         "owner_issues.html",
-        {"request": {}, "issues": issues, "user": user}
+        {"request": request, "issues": issues, "user": user}
     )
 
 
 @router.get("/manager/issues")
-def manager_issues(db: Session = Depends(get_db), user=Depends(get_current_user)):
+def manager_issues(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
     if user.role != "manager":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Fetch only issues from properties assigned to this manager
+    # Get issues only for properties managed by this manager
     issues = (
-        db.query(Issue)
-        .join(Property)
+        db.query(TenantQuery)
+        .join(Property, TenantQuery.property_id == Property.id)
         .filter(Property.manager_id == user.id)
         .all()
     )
 
     return templates.TemplateResponse(
         "manager_issues.html",
-        {"request": {}, "issues": issues, "user": user}
+        {"request": request, "issues": issues, "user": user}
     )
+
