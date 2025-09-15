@@ -184,19 +184,19 @@ class Issue(Base):
 class TenantQuery(Base):
     __tablename__ = "tenant_queries"
 
+    id = Column(Integer, primary_key=True, index=True)
+    description = Column(String, nullable=False)
+    status = Column(String, default="Pending")  # Pending, Resolved
+    reported_by_id = Column(Integer, ForeignKey("users.id"))  # Tenant who reported
+    property_id = Column(Integer, ForeignKey("properties.id"))  # Property related
+    appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)  # Optional
+    created_at = Column(DateTime, default=datetime.utcnow)
 
-id = Column(Integer, primary_key=True, index=True)
-description = Column(String, nullable=False)
-status = Column(String, default="Pending")  # Pending, Resolved
-reported_by_id = Column(Integer, ForeignKey("users.id"))  # Tenant who reported
-property_id = Column(Integer, ForeignKey("properties.id"))  # Property related
-appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)  # Optional
-created_at = Column(DateTime, default=datetime.utcnow)
+    # Relationships
+    reported_by = relationship("User", backref="issues_reported")
+    property = relationship("Property", backref="issues")
+    appliance = relationship("Appliance", backref="issues")
 
-reported_by = relationship("User", backref="issues_reported")
-property = relationship("Property", backref="issues")
-appliance = relationship("Appliance", backref="issues")
-# ----------------------
 # PendingTenant model
 # ----------------------
 class PendingTenant(Base):
