@@ -327,23 +327,24 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
         "appliances": appliances
     })
 
-class Issue(Base):
-    __tablename__ = "issues"
+@router.post("/tenant/report_issue/{appliance_id}")
+def report_issue(appliance_id: int, description: str = Form(...), db: Session = Depends(get_db), user=Depends(get_current_user)):
+    appliance = db.query(Appliance).filter(Appliance.id == appliance_id).first()
+    if not appliance:
+        raise HTTPException(status_code=404, detail="Appliance not found")
 
-    id = Column(Integer, primary_key=True, index=True)
-    description = Column(Text, nullable=False)
-    status = Column(Enum(IssueStatus), default=IssueStatus.pending)
-    tenant_id = Column(Integer, ForeignKey("users.id"))
-    property_id = Column(Integer, ForeignKey("properties.id"))
-    vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
-    cost = Column(Float, nullable=True)
-    bill_url = Column(String(255), nullable=True)
+    issue = Issue(
+        description=description,
+        tenant_id=user.id,          # <-- use tenant_id, not reported_by
+        property_id=appliance.property_id,
+        appliance_id=appliance.id,
+        status="Pending"
+    )
+    db.add(issue)
+    db.commit()
+    db.refresh(issue)
 
-    # Relationships
-    tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
-    property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
-    vendor = relationship("Vendor", back_populates="issues", foreign_keys=[vendor_id])
-
+    return {"message": "Issue reported successfully", "issue_id": issue.id}
 
 
 
