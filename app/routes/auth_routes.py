@@ -51,19 +51,40 @@ def register_get(request: Request):
 
 
 @router.post("/register")
-def register_post(request: Request, username: str = Form(...), email: str = Form(...), password: str = Form(...),
-                  role: str = Form(...), db: Session = Depends(get_db)):
+def register_post(request: Request,
+                  username: str = Form(...),
+                  email: str = Form(...),
+                  password: str = Form(...),
+                  role: str = Form(...),
+                  db: Session = Depends(get_db)):
+
+    # Check if username or email already exists
     if crud.get_user_by_username(db, username) or crud.get_user_by_email(db, email):
         return templates.TemplateResponse("register.html", {"request": request, "error": "Username or email already exists."})
 
-    otp_code = str(random.randint(100000, 999999))
-    otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+    # Tenant → skip OTP, direct registration
+    if role.lower() == "tenant":
+        crud.create_user(db=db, username=username, email=email, role=role, password=password)
 
-    crud.create_user_with_otp(db=db, username=username, email=email, role=role,
-                              password=password, otp=otp_code, otp_expiry=otp_expiry, is_verified=False)
+        # If using PendingTenant table, mark tenant as activated
+        pending = db.query(PendingTenant).filter(PendingTenant.email == email).first()
+        if pending:
+            pending.is_activated = True
+            db.commit()
 
-    send_otp_email(to_email=email, otp=otp_code)
-    return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
+        return RedirectResponse(url="/login", status_code=302)
+
+    # Owner/Manager → send OTP
+    else:
+        otp_code = str(random.randint(100000, 999999))
+        otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+
+        crud.create_user_with_otp(db=db, username=username, email=email, role=role,
+                                  password=password, otp=otp_code, otp_expiry=otp_expiry, is_verified=False)
+
+        send_otp_email(to_email=email, otp=otp_code)
+        return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
+
 
 
 @router.get("/verify_otp", response_class=HTMLResponse)
@@ -168,7 +189,7 @@ def invite_tenant_post(request: Request, name: str = Form(...), email: str = For
 
 
 @router.get("/activate/{token}", response_class=HTMLResponse)
-def activate_account_form(request: Request, token: str, db: Session = Depends(get_db)):
+def activate_tenant_form(request: Request, token: str, db: Session = Depends(get_db)):
     token = token.strip()
     pending = db.query(PendingTenant).filter(
         PendingTenant.activation_token == token,
@@ -182,9 +203,10 @@ def activate_account_form(request: Request, token: str, db: Session = Depends(ge
     return templates.TemplateResponse("register.html", {
         "request": request,
         "email": pending.email,
-        "role": "tenant",
-        "token": token
+        "role": "tenant",  # tenant role fixed
+        "disable_role_select": True  # optional: hide role dropdown in template
     })
+
 
 @router.post("/activate/{token}", response_class=HTMLResponse)
 def activate_tenant_post(
