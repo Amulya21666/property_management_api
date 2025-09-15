@@ -70,12 +70,21 @@ def register_post(request: Request,
                 "error": "Invalid registration or already registered."
             })
 
-        # Create tenant user
-        crud.create_user(db=db, username=username, email=email, role=role, password=password)
+        # Create tenant user with assigned property/floor
+        user = User(
+            username=username,
+            email=email,
+            hashed_password=hash_password(password),
+            role=role,
+            property_id=pending.property_id,
+            floor_id=pending.floor_id  # if floor is assigned
+        )
+        db.add(user)
 
         # Mark tenant as activated
         pending.is_activated = True
         db.commit()
+        db.refresh(user)
 
         return RedirectResponse(url="/login", status_code=302)
 
