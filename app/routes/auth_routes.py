@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 from app import crud
-from app.models import User, Property, Appliance, PendingTenant
+from app.models import User, Property, Appliance, PendingTenant, Issue
 
 
 router = APIRouter()
@@ -327,3 +327,21 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
         "appliances": appliances
     })
 
+
+@router.post("/tenant/report_issue/{appliance_id}")
+def report_issue(appliance_id: int, description: str = Form(...), db: Session = Depends(get_db), user=Depends(get_current_user)):
+    appliance = db.query(Appliance).filter(Appliance.id == appliance_id).first()
+    if not appliance:
+        return RedirectResponse(url="/tenant/dashboard", status_code=302)
+
+    # Create a new Issue
+    issue = Issue(
+        description=description,
+        tenant_id=user.id,
+        property_id=appliance.property_id,
+        appliance_id=appliance.id,
+        status="pending"
+    )
+    db.add(issue)
+    db.commit()
+    return RedirectResponse(url="/tenant/dashboard", status_code=302)
