@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -132,58 +132,53 @@
       <p class="text-muted">No property assigned yet.</p>
     {% endif %}
 
-  <!-- Appliances Section -->
-<h4 class="section-title"><i class="bi bi-plug-fill"></i> Appliances</h4>
-{% if appliances %}
-  <div class="row g-3 mt-2">
-    {% for app in appliances %}
-      <div class="col-md-6">
-        <div class="appliance-card">
-          <img src="{% if app.front_image %}
-                       {{ url_for('static', path='uploads/' ~ app.front_image) }}
-                     {% elif app.name|lower == 'refrigerator' %}
-                       {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
-                     {% else %}
-                       {{ url_for('static', path='uploads/default_appliance.jpg') }}
-                     {% endif %}"
-               alt="{{ app.name }}">
-          <div>
-            <div class="appliance-title">{{ app.name }}</div>
-            <div class="appliance-detail"><strong>Model:</strong> {{ app.model }}</div>
-            <div class="appliance-detail"><strong>Color:</strong> {{ app.color }}</div>
-            <div class="appliance-detail">
-              <strong>Status:</strong>
-              {% if app.status.lower() == 'working' %}
-                <span class="badge bg-success badge-status">Working</span>
-              {% else %}
-                <span class="badge bg-danger badge-status">{{ app.status }}</span>
-              {% endif %}
-            </div>
-            <div class="appliance-detail"><strong>Warranty:</strong> {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}</div>
-            <div class="appliance-detail"><strong>📍 Location:</strong> {{ app.location if app.location else 'N/A' }}</div>
-
-            <!-- Report Issue Form -->
-            <div class="mt-2">
-              <form method="post" action="/tenant/report_issue/{{ app.id }}">
-                <div class="mb-2">
-                  <input type="text" name="description" class="form-control form-control-sm" placeholder="Describe the issue..." required>
+    <!-- Appliances Section -->
+    <h4 class="section-title"><i class="bi bi-plug-fill"></i> Appliances</h4>
+    {% if appliances %}
+      <div class="row g-3 mt-2">
+        {% for app in appliances %}
+          <div class="col-md-6">
+            <div class="appliance-card">
+              <img src="{% if app.front_image %}
+                           {{ url_for('static', path='uploads/' ~ app.front_image) }}
+                         {% elif app.name|lower == 'refrigerator' %}
+                           {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
+                         {% else %}
+                           {{ url_for('static', path='uploads/default_appliance.jpg') }}
+                         {% endif %}"
+                   alt="{{ app.name }}">
+              <div>
+                <div class="appliance-title">{{ app.name }}</div>
+                <div class="appliance-detail"><strong>Model:</strong> {{ app.model }}</div>
+                <div class="appliance-detail"><strong>Color:</strong> {{ app.color }}</div>
+                <div class="appliance-detail">
+                  <strong>Status:</strong>
+                  {% if app.status.lower() == 'working' %}
+                    <span class="badge bg-success badge-status">Working</span>
+                  {% else %}
+                    <span class="badge bg-danger badge-status">{{ app.status }}</span>
+                  {% endif %}
                 </div>
-                <button type="submit" class="btn btn-sm btn-danger">
-                  <i class="bi bi-exclamation-triangle-fill"></i> Report Issue
-                </button>
-              </form>
+                <div class="appliance-detail"><strong>Warranty:</strong> {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}</div>
+                <div class="appliance-detail"><strong>📍 Location:</strong> {{ app.location if app.location else 'N/A' }}</div>
+
+                <!-- Report Issue Form -->
+                <div class="mt-2">
+                  <form method="post" action="/tenant/report_issue/{{ app.id }}">
+                    <div class="mb-2">
+                      <input type="text" name="description" class="form-control form-control-sm" placeholder="Describe the issue..." required>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-danger">
+                      <i class="bi bi-exclamation-triangle-fill"></i> Report Issue
+                    </button>
+                  </form>
+                </div>
+
+              </div>
             </div>
-
           </div>
-        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
-  </div>
-{% else %}
-  <p class="text-muted">No appliances assigned for your property yet.</p>
-{% endif %}
-
-
     {% else %}
       <p class="text-muted">No appliances assigned for your property yet.</p>
     {% endif %}
