@@ -26,9 +26,17 @@ def login_page(request: Request):
 def login_post(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     user = crud.get_user_by_username(db, username)
     if not user or not verify_password(password, user.password_hash):
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password."})
-    if not user.is_verified:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Account not verified. Please verify OTP."})
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Invalid username or password."}
+        )
+
+    # ✅ Skip OTP verification for tenants
+    if user.role != "tenant" and not user.is_verified:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Account not verified. Please verify OTP."}
+        )
 
     request.session["user_id"] = user.id
     request.session["username"] = user.username
