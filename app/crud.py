@@ -1,14 +1,13 @@
 from datetime import datetime, date
 import uuid
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models import (
     Property, User, Appliance, Floor, ActivityLog,
-    PendingTenant, Vendor, Issue, TenantQuery, ApplianceImage
+    PendingTenant, ApplianceImage
 )
 from app.schemas import PropertyCreate
 from app.utils import hash_password
-from app.database import SessionLocal
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -79,16 +78,8 @@ def get_user_by_email(db: Session, email: str):
 def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
-def create_user_with_otp(
-    db: Session,
-    username: str,
-    email: str,
-    password: str,
-    role: str,
-    otp: str,
-    otp_expiry,
-    is_verified: bool = False
-):
+def create_user(db: Session, username: str, email: str, password: str, role: str, **kwargs):
+    """Create a verified user (owner, manager, or tenant without OTP)."""
     if get_user_by_email(db, email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -98,9 +89,8 @@ def create_user_with_otp(
         email=email,
         password_hash=hashed_password,
         role=role,
-        otp=otp,
-        otp_expiry=otp_expiry,
-        is_verified=is_verified
+        is_verified=True,
+        **kwargs
     )
     db.add(new_user)
     db.commit()
@@ -195,11 +185,10 @@ def log_activity(db: Session, user_id: int, action: str):
 
 def get_recent_logs(db: Session, limit: int = 10):
     return db.query(ActivityLog).order_by(ActivityLog.timestamp.desc()).limit(limit).all()
+
 # --------------------------
 # TENANT MANAGEMENT
 # --------------------------
-
-
 def get_all_tenants(db: Session):
     return db.query(User).filter(User.role == "tenant", User.property_id == None).all()
 
@@ -220,13 +209,11 @@ def create_pending_tenant(db: Session, name: str, email: str, property_id: int =
     return tenant
 
 def activate_tenant(db: Session, pending_tenant, password: str, name: str, phone: str):
-    """Convert PendingTenant -> User (tenant). Ensures property_id is copied and user row is committed/refreshed."""
+    """Convert PendingTenant -> User (tenant) without OTP."""
     hashed_password = hash_password(password)
-
-    # create the user with the tenant's assigned property_id from the pending invite
     tenant_user = User(
-        username=name,                       # use provided name for username
-        name=name,                           # optional: store full name if you have this column (adjust to your model)
+        username=name,
+        name=name,
         email=pending_tenant.email,
         phone=phone,
         password_hash=hashed_password,
@@ -237,22 +224,16 @@ def activate_tenant(db: Session, pending_tenant, password: str, name: str, phone
         is_verified=True
     )
     db.add(tenant_user)
-
-    # mark the pending invite as activated and clear token (optional)
     pending_tenant.is_activated = True
     pending_tenant.activation_token = None
-
     db.commit()
     db.refresh(tenant_user)
     return tenant_user
-
-
 
 # --------------------------
 # TENANT ASSIGNMENT
 # --------------------------
 def get_unassigned_tenants(db: Session):
-    """Return tenants who are not yet assigned to any property"""
     return db.query(User).filter(User.role == "tenant", User.property_id == None).all()
 
 def assign_tenant_to_property(db: Session, tenant_id: int, property_id: int,
@@ -282,7 +263,6 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_tenant_property(db, tenant_id: int):
-    from app.models import Property, User
     tenant = db.query(User).filter(User.id == tenant_id).first()
     if not tenant or not tenant.property_id:
         return None
