@@ -7,7 +7,9 @@
         <strong>Description:</strong> {{ issue.description }} <br>
         <strong>Status:</strong> {{ issue.status }} <br>
         <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
-        <strong>Date:</strong> {{ issue.created_at.strftime('%Y-%m-%d %H:%M') if issue.created_at else 'N/A' }}
+        <strong>Date:</strong>
+{{ issue.created_at.strftime('%Y-%m-%d %H:%M') if issue.created_at else 'N/A' }}
+
       </li>
     {% endfor %}
   </ul>
