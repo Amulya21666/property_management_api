@@ -8,6 +8,8 @@ from app.database import get_db
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 from app import crud
 from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus
+from app.crud import create_user, get_user_by_email
+
 
 
 router = APIRouter()
@@ -57,6 +59,8 @@ def logout(request: Request):
 def register_get(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
+from app.crud import create_user
+
 @router.post("/register")
 def register_post(request: Request,
                   username: str = Form(...),
@@ -65,60 +69,42 @@ def register_post(request: Request,
                   role: str = Form(...),
                   db: Session = Depends(get_db)):
 
-    # For tenants: check PendingTenant table instead of full User table
-    if role.lower() == "tenant":
-        pending = db.query(PendingTenant).filter(
-            PendingTenant.email == email,
-            PendingTenant.is_activated == False
-        ).first()
+    try:
+        if role.lower() == "tenant":
+            # handle tenant registration separately if needed
+            pending = db.query(PendingTenant).filter(
+                PendingTenant.email == email,
+                PendingTenant.is_activated == False
+            ).first()
 
-        if not pending:
-            return templates.TemplateResponse("register.html", {
-                "request": request,
-                "error": "Invalid registration or already registered."
-            })
+            if not pending:
+                return templates.TemplateResponse("register.html", {
+                    "request": request,
+                    "error": "Invalid registration or already registered."
+                })
 
-        # Create tenant user with assigned property/floor
-        user = User(
-            username=username,
-            email=email,
-            password_hash=hash_password(password),
-            role=role,
-            property_id=pending.property_id,
-            floor_id=pending.floor_id  # if floor is assigned
-        )
-        db.add(user)
+            user = create_user(
+                db=db,
+                username=username,
+                email=email,
+                password=password,
+                role=role,
+                property_id=pending.property_id,
+                floor_id=pending.floor_id
+            )
 
-        # Mark tenant as activated
-        pending.is_activated = True
-        db.commit()
-        db.refresh(user)
+            # mark tenant as activated
+            pending.is_activated = True
+            db.commit()
+            return RedirectResponse(url="/login", status_code=302)
 
-        return RedirectResponse(url="/login", status_code=302)
-    # Owner/Manager → OTP flow
-    else:
-        if crud.get_user_by_username(db, username) or crud.get_user_by_email(db, email):
-            return templates.TemplateResponse("register.html",
-                                              {"request": request, "error": "Username or email already exists."})
+        else:
+            # Owner/Manager → OTP flow handled inside create_user
+            create_user(db=db, username=username, email=email, password=password, role=role)
+            return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
 
-        # Generate OTP
-        otp_code = str(random.randint(100000, 999999))
-        otp_expiry = datetime.utcnow() + timedelta(minutes=5)
-
-        # Use crud.create_user (it handles OTP for owner/manager)
-        crud.create_user(
-            db=db,
-            username=username,
-            email=email,
-            password=password,
-            role=role,
-            otp=otp_code,
-            otp_expiry=otp_expiry,
-            is_verified=False
-        )
-
-        send_otp_email(to_email=email, otp=otp_code)
-        return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
+    except Exception as e:
+        return templates.TemplateResponse("register.html", {"request": request, "error": str(e)})
 
 
 @router.get("/verify_otp", response_class=HTMLResponse)
