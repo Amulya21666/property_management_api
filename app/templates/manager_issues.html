@@ -7,7 +7,8 @@
         <strong>Appliance:</strong> {{ issue.appliance.name if issue.appliance else 'N/A' }} <br>
         <strong>Description:</strong> {{ issue.description }} <br>
         <strong>Status:</strong> {{ issue.status }} <br>
-        <strong>Reported by:</strong> {{ issue.reported_by.username }} <br>
+         <strong>Reported by:</strong> {{ issue.tenant.username }}
+ <br>
         <strong>Date:</strong> {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
       </li>
     {% endfor %}
@@ -15,3 +16,4 @@
 {% else %}
   <p>No issues reported yet.</p>
 {% endif %}
+
