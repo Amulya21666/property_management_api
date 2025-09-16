@@ -8,7 +8,9 @@ from app.database import get_db
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 from app import crud
 from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus
-from app.crud import create_user, get_user_by_email
+from app.crud import create_user
+from app.utils import send_otp_email
+
 
 
 
@@ -59,7 +61,7 @@ def logout(request: Request):
 def register_get(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-from app.crud import create_user
+
 
 @router.post("/register")
 def register_post(request: Request,
