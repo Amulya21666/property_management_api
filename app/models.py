@@ -182,6 +182,7 @@ class Issue(Base):
     status = Column(Enum(IssueStatus), default=IssueStatus.pending)
     tenant_id = Column(Integer, ForeignKey("users.id"))
     property_id = Column(Integer, ForeignKey("properties.id"))
+    appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
     cost = Column(Float, nullable=True)
     bill_url = Column(String(255), nullable=True)
