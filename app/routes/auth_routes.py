@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 from app import crud
-from app.models import User, Property, Appliance, PendingTenant, Issue
+from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus, TenantQuery
 
 
 router = APIRouter()
@@ -338,7 +338,7 @@ def report_issue(appliance_id: int, description: str = Form(...), db: Session = 
         tenant_id=user.id,          # <-- use tenant_id, not reported_by
         property_id=appliance.property_id,
         appliance_id=appliance.id,
-        status="Pending"
+        status=IssueStatus.pending
     )
     db.add(issue)
     db.commit()

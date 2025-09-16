@@ -194,14 +194,19 @@ class Issue(Base):
 
 
 # ----------------------
+
 # TenantQuery model
 # ----------------------
+class QueryStatus(PyEnum):
+    pending = "pending"
+    resolved = "resolved"
+
 class TenantQuery(Base):
     __tablename__ = "tenant_queries"
 
     id = Column(Integer, primary_key=True, index=True)
     description = Column(String, nullable=False)
-    status = Column(String, default="Pending")  # Pending, Resolved
+    status = Column(Enum(QueryStatus), default=QueryStatus.pending)
     reported_by_id = Column(Integer, ForeignKey("users.id"))
     property_id = Column(Integer, ForeignKey("properties.id"))
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
