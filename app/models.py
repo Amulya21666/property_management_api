@@ -186,6 +186,7 @@ class Issue(Base):
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
     cost = Column(Float, nullable=True)
     bill_url = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
