@@ -80,43 +80,62 @@ def get_user_by_email(db: Session, email: str):
 def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
+
+from app.crud import get_user_by_email  # make sure this exists
+
+
 def create_user(db: Session, username: str, email: str, password: str, role: str, **kwargs):
-    """Create a user: OTP for owner/manager, no OTP for tenant."""
+    """
+    Create a user: OTP for owner/manager, no OTP for tenant.
+    """
+    # Check if email already exists
     if get_user_by_email(db, email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # Hash the password
     hashed_password = hash_password(password)
 
-    if role in ["owner", "manager"]:
+    # Remove conflicting keys from kwargs to avoid "multiple values" error
+    for key in ["otp", "otp_expiry", "is_verified"]:
+        if key in kwargs:
+            kwargs.pop(key)
+
+    if role.lower() in ["owner", "manager"]:
         # Generate OTP for owner/manager
-        otp = str(uuid.uuid4())[:6]
+        otp = str(uuid.uuid4())[:6]  # 6-character OTP
         otp_expiry = datetime.utcnow() + timedelta(minutes=10)
+
         new_user = User(
             username=username,
             email=email,
             password_hash=hashed_password,
-            role=role,
+            role=role.lower(),
             otp=otp,
             otp_expiry=otp_expiry,
-            is_verified=False,  # Not verified yet, OTP pending
+            is_verified=False,  # OTP pending
             **kwargs
         )
-        send_otp_email(email, otp)  # send OTP email
+
+        # Send OTP email
+        send_otp_email(to_email=email, otp=otp)
+
     else:
         # Tenant registration (no OTP)
         new_user = User(
             username=username,
             email=email,
             password_hash=hashed_password,
-            role=role,
+            role=role.lower(),
             is_verified=True,  # already verified
             **kwargs
         )
 
+    # Save to DB
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
+
 
 # --------------------------
 # APPLIANCE MANAGEMENT
