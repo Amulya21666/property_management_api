@@ -79,19 +79,38 @@ def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
 def create_user(db: Session, username: str, email: str, password: str, role: str, **kwargs):
-    """Create a verified user (owner, manager, or tenant without OTP)."""
+    """Create a user: OTP for owner/manager, no OTP for tenant."""
     if get_user_by_email(db, email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     hashed_password = hash_password(password)
-    new_user = User(
-        username=username,
-        email=email,
-        password_hash=hashed_password,
-        role=role,
-        is_verified=True,
-        **kwargs
-    )
+
+    if role in ["owner", "manager"]:
+        # Generate OTP for owner/manager
+        otp = str(uuid.uuid4())[:6]
+        otp_expiry = datetime.utcnow() + timedelta(minutes=10)
+        new_user = User(
+            username=username,
+            email=email,
+            password_hash=hashed_password,
+            role=role,
+            otp=otp,
+            otp_expiry=otp_expiry,
+            is_verified=False,  # Not verified yet, OTP pending
+            **kwargs
+        )
+        send_otp_email(email, otp)  # send OTP email
+    else:
+        # Tenant registration (no OTP)
+        new_user = User(
+            username=username,
+            email=email,
+            password_hash=hashed_password,
+            role=role,
+            is_verified=True,  # already verified
+            **kwargs
+        )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
