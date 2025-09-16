@@ -180,18 +180,20 @@ class Issue(Base):
     id = Column(Integer, primary_key=True, index=True)
     description = Column(Text, nullable=False)
     status = Column(Enum(IssueStatus), default=IssueStatus.pending)
-    tenant_id = Column(Integer, ForeignKey("users.id"))
-    property_id = Column(Integer, ForeignKey("properties.id"))
+    tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
     cost = Column(Float, nullable=True)
     bill_url = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # ✅ ensure never None
 
     # Relationships
     tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
     property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
     vendor = relationship("Vendor", back_populates="issues", foreign_keys=[vendor_id])
+    appliance = relationship("Appliance", back_populates="issues", foreign_keys=[appliance_id])  # ✅ add appliance
+
 
 
 # ----------------------
