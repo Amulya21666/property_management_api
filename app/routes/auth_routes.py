@@ -1,16 +1,16 @@
 import random, os
 from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+
 from app.database import get_db
-from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 from app import crud
 from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus
-from app.crud import create_user
-from app.utils import send_otp_email
-
+from app.crud import create_user, get_user_by_email
+from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 
 
 

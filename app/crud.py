@@ -1,15 +1,16 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import uuid
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from passlib.context import CryptContext
+
 from app.models import (
     Property, User, Appliance, Floor, ActivityLog,
     PendingTenant, ApplianceImage
 )
 from app.schemas import PropertyCreate
-from app.utils import hash_password
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from app.utils import hash_password, send_otp_email  # ✅ Import from utils
+
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -296,11 +297,6 @@ def assign_tenant_to_property(db: Session, tenant_id: int, property_id: int,
 # --------------------------
 # PASSWORD / UTILS
 # --------------------------
-def hash_password(password: str):
-    return pwd_context.hash(password)
-
-def verify_password(plain_password: str, hashed_password: str):
-    return pwd_context.verify(plain_password, hashed_password)
 
 def get_tenant_property(db, tenant_id: int):
     tenant = db.query(User).filter(User.id == tenant_id).first()
