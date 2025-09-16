@@ -118,7 +118,7 @@ class Appliance(Base):
     floor = relationship("Floor", back_populates="appliances")
     images = relationship("ApplianceImage", back_populates="appliance", cascade="all, delete-orphan")
     queries = relationship("TenantQuery", back_populates="appliance", cascade="all, delete-orphan")
-
+    issues = relationship("Issue", back_populates="appliance") 
 
 # ----------------------
 # ApplianceImage model
