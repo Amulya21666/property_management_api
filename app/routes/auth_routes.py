@@ -95,21 +95,30 @@ def register_post(request: Request,
         db.refresh(user)
 
         return RedirectResponse(url="/login", status_code=302)
-
     # Owner/Manager → OTP flow
     else:
         if crud.get_user_by_username(db, username) or crud.get_user_by_email(db, email):
-            return templates.TemplateResponse("register.html", {"request": request, "error": "Username or email already exists."})
+            return templates.TemplateResponse("register.html",
+                                              {"request": request, "error": "Username or email already exists."})
 
+        # Generate OTP
         otp_code = str(random.randint(100000, 999999))
         otp_expiry = datetime.utcnow() + timedelta(minutes=5)
 
-        crud.create_user_with_otp(db=db, username=username, email=email, role=role,
-                                  password=password, otp=otp_code, otp_expiry=otp_expiry, is_verified=False)
+        # Use crud.create_user (it handles OTP for owner/manager)
+        crud.create_user(
+            db=db,
+            username=username,
+            email=email,
+            password=password,
+            role=role,
+            otp=otp_code,
+            otp_expiry=otp_expiry,
+            is_verified=False
+        )
 
         send_otp_email(to_email=email, otp=otp_code)
         return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
-
 
 
 @router.get("/verify_otp", response_class=HTMLResponse)
