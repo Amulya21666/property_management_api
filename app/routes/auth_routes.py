@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 from app import crud
-from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus, TenantQuery
+from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus
 
 
 router = APIRouter()
@@ -349,35 +349,45 @@ def report_issue(appliance_id: int, description: str = Form(...), db: Session = 
 
 
 from fastapi import Request
-
-@router.get("/owner/issues")
-def owner_issues(db: Session = Depends(get_db), user=Depends(get_current_user)):
+@router.get("/owner/issues", response_class=HTMLResponse)
+def owner_issues(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
     if user.role != "owner":
         raise HTTPException(status_code=403, detail="Not authorized")
+
+    # ✅ Fetch issues for properties owned by this owner
     issues = (
-        db.query(TenantQuery)
+        db.query(Issue)
         .join(Property)
         .filter(Property.owner_id == user.id)
         .all()
     )
     return templates.TemplateResponse(
         "owner_issues.html",
-        {"request": {}, "issues": issues, "user": user}
+        {"request": request, "issues": issues, "user": user}
     )
 
 
-@router.get("/manager/issues")
-def manager_issues(db: Session = Depends(get_db), user=Depends(get_current_user)):
+@router.get("/manager/issues", response_class=HTMLResponse)
+def manager_issues(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
     if user.role != "manager":
         raise HTTPException(status_code=403, detail="Not authorized")
+
+    # ✅ Fetch issues for properties managed by this manager
     issues = (
-        db.query(TenantQuery)
+        db.query(Issue)
         .join(Property)
         .filter(Property.manager_id == user.id)
         .all()
     )
     return templates.TemplateResponse(
         "manager_issues.html",
-        {"request": {}, "issues": issues, "user": user}
+        {"request": request, "issues": issues, "user": user}
     )
 
+
+
+@router.get("/tenant/queries")
+def tenant_queries_list(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    from app.models import TenantQuery  # ✅ Import locally to avoid circular import
+    queries = db.query(TenantQuery).filter(TenantQuery.reported_by_id == user.id).all()
+    return {"queries": queries}
