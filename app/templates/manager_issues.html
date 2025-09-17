@@ -6,7 +6,7 @@
       <li class="list-group-item">
         <strong>Appliance:</strong> {{ issue.appliance.name if issue.appliance else 'N/A' }} <br>
         <strong>Description:</strong> {{ issue.description }} <br>
-        <strong>Status:</strong> {{ issue.status.value }} <br>
+        <strong>Status:</strong> {{ issue.status.value.capitalize() }} <br>
         <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
         <strong>Vendor:</strong> {{ issue.vendor.name if issue.vendor else 'Not assigned' }} <br>
         <strong>Date:</strong>
@@ -16,18 +16,21 @@
           N/A
         {% endif %}
 
-        <!-- ✅ Show vendor assignment form only if pending -->
+        <!-- ✅ Vendor assignment form: only for pending issues -->
         {% if issue.status.value == "pending" %}
           <form action="/manager/assign_vendor/{{ issue.id }}" method="post" class="mt-2">
             <div class="input-group">
               <select name="vendor_id" class="form-select" required>
+                <option value="">Select Vendor</option>
                 {% for vendor in vendors %}
-                  <option value="{{ vendor.id }}">{{ vendor.name }} ({{ vendor.specialization }})</option>
+                  <option value="{{ vendor.id }}">{{ vendor.name }} ({{ vendor.service_type }})</option>
                 {% endfor %}
               </select>
               <button type="submit" class="btn btn-primary btn-sm">Assign</button>
             </div>
           </form>
+        {% else %}
+          <span class="badge bg-success mt-2">Assigned</span>
         {% endif %}
       </li>
     {% endfor %}
