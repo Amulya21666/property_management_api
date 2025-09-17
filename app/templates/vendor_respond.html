@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Response</title>
+</head>
+<body>
+    <h2>Vendor Response</h2>
+
+    <p><b>Appliance:</b> {{ issue.appliance.name }}</p>
+    <p><b>Description:</b> {{ issue.description }}</p>
+    <p><b>Status:</b> {{ issue.status }}</p>
+
+    <form method="post" action="/vendor/respond/{{ issue.id }}?token={{ issue.vendor_token }}">
+        <label>Bill Amount:</label>
+        <input type="number" step="0.01" name="bill_amount" required>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

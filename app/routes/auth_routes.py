@@ -25,53 +25,28 @@ templates = Jinja2Templates(directory="app/templates")
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@router.post("/login")
-def login_post(
-    request: Request,
-    username: str = Form(...),
-    password: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    user = crud.get_user_by_username(db, username)
 
-    # ❌ Invalid user or wrong password
+
+@router.post("/login")
+def login_post(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    user = crud.get_user_by_username(db, username)
     if not user or not verify_password(password, user.password_hash):
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Invalid username or password."}
         )
 
-    # ✅ Skip OTP only for tenants
+    # ✅ Skip OTP verification for tenants
     if user.role != "tenant" and not user.is_verified:
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Account not verified. Please verify OTP."}
         )
 
-    # ✅ Set session
     request.session["user_id"] = user.id
     request.session["username"] = user.username
     request.session["role"] = user.role
-
-    # ✅ Redirect based on role
-    if user.role == "owner":
-        return RedirectResponse(url="/owner/dashboard", status_code=302)
-    elif user.role == "manager":
-        return RedirectResponse(url="/manager/dashboard", status_code=302)
-    elif user.role == "tenant":
-        return RedirectResponse(url="/tenant/dashboard", status_code=302)
-    elif user.role == "vendor":
-        return RedirectResponse(url="/vendor/issues", status_code=302)  # vendor sees issues directly
-    else:
-        return RedirectResponse(url="/dashboard", status_code=302)
-
-
-
-@router.get("/logout")
-def logout(request: Request):
-    request.session.clear()
-    return RedirectResponse(url="/login", status_code=302)
-
+    return RedirectResponse(url="/dashboard", status_code=302)
 
 # --------------------------
 # REGISTRATION + OTP
@@ -82,19 +57,16 @@ def register_get(request: Request):
 
 
 @router.post("/register")
-def register_post(
-    request: Request,
-    username: str = Form(...),
-    email: str = Form(...),
-    password: str = Form(...),
-    role: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    try:
-        role = role.lower()
+def register_post(request: Request,
+                  username: str = Form(...),
+                  email: str = Form(...),
+                  password: str = Form(...),
+                  role: str = Form(...),
+                  db: Session = Depends(get_db)):
 
-        if role == "tenant":
-            # ✅ Tenant registration requires invitation
+    try:
+        if role.lower() == "tenant":
+            # handle tenant registration separately if needed
             pending = db.query(PendingTenant).filter(
                 PendingTenant.email == email,
                 PendingTenant.is_activated == False
@@ -121,24 +93,14 @@ def register_post(
             db.commit()
             return RedirectResponse(url="/login", status_code=302)
 
-        elif role in ["owner", "manager"]:
-            # ✅ Owner/Manager → OTP verification
+        else:
+            # Owner/Manager → OTP flow handled inside create_user
             create_user(db=db, username=username, email=email, password=password, role=role)
             return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
 
-        elif role == "vendor":
-            # ✅ Vendor → direct registration (no OTP, no invite)
-            create_user(db=db, username=username, email=email, password=password, role=role)
-            return RedirectResponse(url="/login", status_code=302)
-
-        else:
-            return templates.TemplateResponse("register.html", {
-                "request": request,
-                "error": "Invalid role selected."
-            })
-
     except Exception as e:
         return templates.TemplateResponse("register.html", {"request": request, "error": str(e)})
+
 
 @router.get("/verify_otp", response_class=HTMLResponse)
 def verify_otp_get(request: Request, email: str):
@@ -434,6 +396,16 @@ def tenant_queries_list(request: Request, db: Session = Depends(get_db), user=De
 
 from fastapi import Form
 
+import uuid
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models import Issue, Vendor, User
+from app.utils import get_current_user
+
+router = APIRouter()
+
 @router.post("/manager/assign_vendor/{issue_id}")
 def assign_vendor(
     issue_id: int,
@@ -441,22 +413,28 @@ def assign_vendor(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # ✅ Only managers can assign vendors
     if current_user.role != "manager":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Fetch the issue
+    # ✅ Fetch the issue
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
     if not issue:
         raise HTTPException(status_code=404, detail="Issue not found")
 
-    # Fetch the vendor
+    # ✅ Fetch the vendor
     vendor = db.query(Vendor).filter(Vendor.id == int(vendor_id)).first()
     if not vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
 
-    # ✅ Assign vendor correctly
-    issue.vendor_id = vendor.id  # <-- Use vendor_id, not assigned_to
-    issue.status = IssueStatus.assigned
+    # ✅ Assign vendor & generate secure token
+    issue.vendor_id = vendor.id
+    issue.vendor_token = str(uuid.uuid4())
+    issue.status = "assigned"
     db.commit()
+
+    # ✅ Generate direct vendor link (send via email/SMS in real app)
+    vendor_link = f"http://localhost:8000/vendor/respond/{issue.id}?token={issue.vendor_token}"
+    print("Vendor link:", vendor_link)
 
     return RedirectResponse(url="/manager/issues", status_code=303)

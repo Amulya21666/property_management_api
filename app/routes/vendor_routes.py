@@ -53,23 +53,16 @@ def delete_vendor(vendor_id: int, db: Session = Depends(get_db), current_user: U
         db.commit()
     return RedirectResponse(url="/owner/manage_vendors", status_code=303)
 
+
 @router.get("/vendor/issues", response_class=HTMLResponse)
-def vendor_issues(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    if current_user.role != "vendor":
+def vendor_issues(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # ✅ Fetch only issues assigned to this vendor
-    issues = db.query(Issue).filter(Issue.assigned_to == current_user.id).all()
+    # Fetch issues assigned to this vendor
+    issues = db.query(Issue).filter(Issue.assigned_to == user.id).all()
 
-    return templates.TemplateResponse(
-        "vendor_issues.html",
-        {"request": request, "issues": issues, "user": current_user}
-    )
-
+    return templates.TemplateResponse("vendor_issues.html", {"request": request, "issues": issues, "user": user})
 
 @router.post("/vendor/mark_repaired/{issue_id}")
 def mark_issue_repaired(
@@ -111,3 +104,29 @@ def submit_bill(issue_id: int, bill_amount: float = Form(...), db: Session = Dep
     db.commit()
     return RedirectResponse("/vendor/issues", status_code=302)
 
+from fastapi.responses import HTMLResponse
+from fastapi import Form
+
+@router.get("/vendor/respond/{issue_id}", response_class=HTMLResponse)
+def vendor_respond(request: Request, issue_id: int, token: str, db: Session = Depends(get_db)):
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.vendor_token == token).first()
+    if not issue:
+        return HTMLResponse("<h3>❌ Invalid or expired link.</h3>", status_code=400)
+
+    return templates.TemplateResponse("vendor_respond.html", {
+        "request": request,
+        "issue": issue
+    })
+
+
+@router.post("/vendor/respond/{issue_id}")
+def vendor_submit(issue_id: int, token: str, bill_amount: float = Form(...), db: Session = Depends(get_db)):
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.vendor_token == token).first()
+    if not issue:
+        return HTMLResponse("<h3>❌ Invalid or expired link.</h3>", status_code=400)
+
+    issue.status = "completed"
+    issue.bill_amount = bill_amount
+    db.commit()
+
+    return HTMLResponse("<h3>✅ Bill submitted successfully!</h3>")
