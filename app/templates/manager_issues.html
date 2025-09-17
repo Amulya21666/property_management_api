@@ -10,11 +10,11 @@
         <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
 
         <strong>Vendor:</strong>
-        {% if issue.status.lower() == "pending" %}
-          <!-- Show dropdown to assign vendor -->
+        {% if not issue.assigned_to %}
+          <!-- Show dropdown to assign vendor if none assigned -->
           <form action="/manager/assign_vendor/{{ issue.id }}" method="post" class="mt-2 mb-2">
             <div class="input-group">
-              <select name="vendor_id" class="form-select" required>
+              <select name="worker" class="form-select" required>
                 <option value="" disabled selected>Select Vendor</option>
                 {% for vendor in vendors %}
                   <option value="{{ vendor.id }}">{{ vendor.name }} ({{ vendor.specialization }})</option>
