@@ -4,6 +4,51 @@
     <meta charset="UTF-8">
     <title>Manage Vendors</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f4f4f4;
+        }
+        h2, h3 {
+            color: #333;
+        }
+        form input, form select, form button {
+            margin: 5px 0;
+            padding: 8px;
+            font-size: 14px;
+        }
+        form button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: white;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        table th {
+            background-color: #f0f0f0;
+        }
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #555;
+        }
+        a:hover {
+            color: #000;
+        }
+    </style>
 </head>
 <body>
     <h2>Manage Vendors</h2>
@@ -11,31 +56,32 @@
     <!-- Add Vendor Form -->
     <form action="/owner/add_vendor" method="post">
         <input type="text" name="name" placeholder="Vendor Name" required>
-        <select name="specialization" required>
+        <select name="service_type" required>
+            <option value="">Select Service Type</option>
             <option value="Plumber">Plumber</option>
             <option value="Electrician">Electrician</option>
             <option value="Carpenter">Carpenter</option>
         </select>
-        <input type="text" name="phone" placeholder="Phone">
-        <input type="email" name="email" placeholder="Email">
+        <input type="text" name="contact" placeholder="Phone/Contact">
+        <input type="email" name="email" placeholder="Email (optional)">
         <button type="submit">Add Vendor</button>
     </form>
 
     <h3>Existing Vendors</h3>
-    <table border="1">
+    <table>
         <tr>
             <th>Name</th>
-            <th>Specialization</th>
-            <th>Phone</th>
+            <th>Service Type</th>
+            <th>Contact</th>
             <th>Email</th>
             <th>Action</th>
         </tr>
         {% for vendor in vendors %}
         <tr>
             <td>{{ vendor.name }}</td>
-            <td>{{ vendor.specialization }}</td>
-            <td>{{ vendor.phone }}</td>
-            <td>{{ vendor.email }}</td>
+            <td>{{ vendor.service_type }}</td>
+            <td>{{ vendor.contact }}</td>
+            <td>{{ vendor.email or "-" }}</td>
             <td>
                 <form action="/owner/delete_vendor/{{ vendor.id }}" method="post" style="display:inline;">
                     <button type="submit" onclick="return confirm('Delete this vendor?')">Delete</button>

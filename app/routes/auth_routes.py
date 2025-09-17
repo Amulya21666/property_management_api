@@ -425,7 +425,8 @@ def assign_worker(
 
     # ✅ Assign issue to vendor
     issue.assigned_to = vendor.id
-    issue.status = IssueStatus.in_progress
+    issue.status = IssueStatus.assigned
+
     db.commit()
 
     return RedirectResponse(url="/manager/issues", status_code=303)

@@ -161,16 +161,16 @@ class Vendor(Base):
     name = Column(String, nullable=False)
     service_type = Column(String, nullable=False)  # plumber, electrician, etc.
     contact = Column(String, nullable=False)
+    category = Column(String, nullable=False)
 
     issues = relationship("Issue", back_populates="vendor")
 # ----------------------
 # Issue model
-# ----------------------
-class IssueStatus(PyEnum):
-    pending = "pending"
-    assigned = "assigned"
-    completed = "completed"
-    verified = "verified"
+# ---------------
+    class IssueStatus(str, Enum):
+        pending = "pending"
+        assigned = "assigned"
+        repaired = "repaired"
 
     class WorkerType(enum.Enum):
         electrician = "Electrician"
@@ -183,7 +183,8 @@ class Issue(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     description = Column(Text, nullable=False)
-    status = Column(Enum(IssueStatus), default=IssueStatus.pending)
+    status = Column(String, default="pending")
+    assigned_to = Column(Integer, ForeignKey("vendors.id"), nullable=True)  # ✅ this field
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
