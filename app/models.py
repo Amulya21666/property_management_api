@@ -161,6 +161,8 @@ class Vendor(Base):
     name = Column(String, nullable=False)
     service_type = Column(String, nullable=False)  # plumber, electrician, etc.
     contact = Column(String, nullable=False)
+
+    issues = relationship("Issue", back_populates="vendor")
 # ----------------------
 # Issue model
 # ----------------------
@@ -193,7 +195,7 @@ class Issue(Base):
     # Relationships
     tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
     property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
-    vendor = relationship("Vendor", back_populates="issues", foreign_keys=[vendor_id])
+    vendor = relationship("Vendor", back_populates="issues")
     appliance = relationship("Appliance", back_populates="issues", foreign_keys=[appliance_id])  # ✅ add appliance
 
 
