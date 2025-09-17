@@ -167,40 +167,43 @@ class Vendor(Base):
 # ----------------------
 # Issue model
 # ---------------
-    class IssueStatus(str, Enum):
-        pending = "pending"
-        assigned = "assigned"
-        repaired = "repaired"
 
-    class WorkerType(enum.Enum):
-        electrician = "Electrician"
-        plumber = "Plumber"
-        carpenter = "Carpenter"
-        other = "Other"
+# ✅ Top-level enums
+class IssueStatus(str, Enum):
+    pending = "pending"
+    assigned = "assigned"
+    repaired = "repaired"
+
+
+class WorkerType(str, Enum):
+    electrician = "Electrician"
+    plumber = "Plumber"
+    carpenter = "Carpenter"
+    other = "Other"
+
+    # ✅ Issue model
+
 
 class Issue(Base):
     __tablename__ = "issues"
 
     id = Column(Integer, primary_key=True, index=True)
     description = Column(Text, nullable=False)
-    status = Column(String, default="pending")
-    assigned_to = Column(Integer, ForeignKey("vendors.id"), nullable=True)  # ✅ this field
+    status = Column(String, default=IssueStatus.pending.value)  # use enum default
+    assigned_to = Column(Integer, ForeignKey("vendors.id"), nullable=True)
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
     cost = Column(Float, nullable=True)
     bill_url = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # ✅ ensure never None
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
     tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
     property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
     vendor = relationship("Vendor", back_populates="issues")
-    appliance = relationship("Appliance", back_populates="issues", foreign_keys=[appliance_id])  # ✅ add appliance
-
-
-
+    appliance = relationship("Appliance", back_populates="issues", foreign_keys=[appliance_id])
 # ----------------------
 
 # TenantQuery model
