@@ -1,44 +1,21 @@
-<h4 class="mb-3">📋 Reported Issues</h4>
-
+<h4>Reported Issues</h4>
 {% if issues %}
-  <div class="row">
+  <ul class="list-group">
     {% for issue in issues %}
-      <div class="col-md-6 mb-3">
-        <div class="card shadow-sm border-0 rounded-3">
-          <div class="card-body">
-            <h5 class="card-title text-primary">
-              {{ issue.appliance.name if issue.appliance else 'N/A' }}
-            </h5>
-            <p class="card-text text-muted mb-2">
-              {{ issue.description }}
-            </p>
-
-            <!-- Status badge -->
-            <span class="badge
-              {% if issue.status == 'IssueStatus.pending' %} bg-warning text-dark
-              {% elif issue.status == 'IssueStatus.resolved' %} bg-success
-              {% else %} bg-secondary {% endif %}">
-              {{ issue.status.replace('IssueStatus.', '') | capitalize }}
-            </span>
-
-            <hr>
-
-            <p class="mb-1">
-              <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }}
-            </p>
-            <p class="mb-0 text-muted">
-              <strong>Date:</strong>
-              {% if issue.created_at %}
-                {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
-              {% else %}
-                N/A
-              {% endif %}
-            </p>
-          </div>
-        </div>
-      </div>
+      <li class="list-group-item">
+        <strong>Appliance:</strong> {{ issue.appliance.name if issue.appliance else 'N/A' }} <br>
+        <strong>Description:</strong> {{ issue.description }} <br>
+        <strong>Status:</strong> {{ issue.status }} <br>
+        <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
+        <strong>Date:</strong>
+        {% if issue.created_at %}
+          {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
+        {% else %}
+          N/A
+        {% endif %}
+      </li>
     {% endfor %}
-  </div>
+  </ul>
 {% else %}
-  <p class="text-muted">No issues reported.</p>
+  <p>No issues reported.</p>
 {% endif %}
