@@ -3,7 +3,7 @@ from datetime import datetime, date
 from enum import Enum as PyEnum
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, DateTime,
-    Boolean, Date, Text, UniqueConstraint, Float, Enum
+    Boolean, Date, Text, UniqueConstraint, Float, Enum,enum
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -173,6 +173,12 @@ class IssueStatus(PyEnum):
     assigned = "assigned"
     completed = "completed"
     verified = "verified"
+
+    class WorkerType(enum.Enum):
+        electrician = "Electrician"
+        plumber = "Plumber"
+        carpenter = "Carpenter"
+        other = "Other"
 
 class Issue(Base):
     __tablename__ = "issues"
