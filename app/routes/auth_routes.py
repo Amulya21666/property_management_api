@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app import crud
-from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus
+from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus,Vendor
 from app.crud import create_user, get_user_by_email
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
 

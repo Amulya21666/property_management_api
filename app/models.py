@@ -3,10 +3,11 @@ from datetime import datetime, date
 from enum import Enum as PyEnum
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, DateTime,
-    Boolean, Date, Text, UniqueConstraint, Float, Enum,enum
+    Boolean, Date, Text, UniqueConstraint, Float, Enum
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
+import enum
 
 # ----------------------
 # User model
