@@ -1,11 +1,11 @@
-# app/routes/vendor_routes.py
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from app.database import get_db
-from app.models import Vendor, User
+from app.models import Vendor, User, Issue, IssueStatus
 from app.utils import get_current_user
 
 router = APIRouter()
@@ -53,14 +53,49 @@ def delete_vendor(vendor_id: int, db: Session = Depends(get_db), current_user: U
         db.commit()
     return RedirectResponse(url="/owner/manage_vendors", status_code=303)
 
+@router.get("/vendor/issues", response_class=HTMLResponse)
+def vendor_issues(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # ✅ Fetch only issues assigned to this vendor
+    issues = db.query(Issue).filter(Issue.assigned_to == current_user.id).all()
+
+    return templates.TemplateResponse(
+        "vendor_issues.html",
+        {"request": request, "issues": issues, "user": current_user}
+    )
 
 
+@router.post("/vendor/mark_repaired/{issue_id}")
+def mark_issue_repaired(
+    issue_id: int,
+    bill_amount: float = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Not authorized")
 
-@router.get("/vendor/issues")
-def vendor_issues(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    # Get issues assigned to this vendor
-    issues = db.query(Issue).filter(Issue.vendor_id == current_user.id).all()
-    return templates.TemplateResponse("vendor_issues.html", {"request": request, "issues": issues})
+    issue = db.query(Issue).filter(
+        Issue.id == issue_id,
+        Issue.assigned_to == current_user.id
+    ).first()
+
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found or not assigned to you")
+
+    issue.status = IssueStatus.repaired
+    issue.bill_amount = bill_amount
+    issue.completed_at = datetime.utcnow()
+
+    db.commit()
+
+    return RedirectResponse(url="/vendor/issues", status_code=303)
 
 
 @router.post("/vendor/submit_bill/{issue_id}")
@@ -75,3 +110,4 @@ def submit_bill(issue_id: int, bill_amount: float = Form(...), db: Session = Dep
     issue.completed_at = datetime.utcnow()
     db.commit()
     return RedirectResponse("/vendor/issues", status_code=302)
+

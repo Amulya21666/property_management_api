@@ -1,25 +1,29 @@
-<h3>Assigned Issues</h3>
+<h3>My Assigned Issues</h3>
+
 {% if issues %}
   <ul class="list-group">
     {% for issue in issues %}
       <li class="list-group-item">
         <strong>Appliance:</strong> {{ issue.appliance.name if issue.appliance else 'N/A' }} <br>
         <strong>Description:</strong> {{ issue.description }} <br>
-        <strong>Status:</strong> {{ issue.status.capitalize() }} <br>
-        {% if issue.status == 'assigned' %}
-          <form action="/vendor/submit_bill/{{ issue.id }}" method="post" class="mt-2">
-            <div class="input-group">
-              <input type="number" step="0.01" name="bill_amount" class="form-control" placeholder="Enter bill amount" required>
-              <button type="submit" class="btn btn-success btn-sm">Submit Bill</button>
-            </div>
+        <strong>Status:</strong> {{ issue.status }} <br>
+        <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
+        <strong>Date Reported:</strong> {{ issue.created_at.strftime('%Y-%m-%d %H:%M') if issue.created_at else 'N/A' }} <br>
+
+        {% if issue.status != "repaired" %}
+          <form action="/vendor/mark_repaired/{{ issue.id }}" method="post" class="mt-2">
+            <label>Bill Amount:</label>
+            <input type="number" step="0.01" name="bill_amount" required class="form-control mb-2">
+            <button type="submit" class="btn btn-success btn-sm">Mark Repaired</button>
           </form>
         {% else %}
-          <strong>Bill:</strong> {{ issue.bill_amount or 'N/A' }} <br>
-          <strong>Completed At:</strong> {{ issue.completed_at.strftime('%Y-%m-%d %H:%M') if issue.completed_at else 'N/A' }}
+          ✅ <strong>Bill Amount:</strong> {{ issue.bill_amount }}
+          <br>
+          ✅ <strong>Completed At:</strong> {{ issue.completed_at.strftime('%Y-%m-%d %H:%M') if issue.completed_at else 'N/A' }}
         {% endif %}
       </li>
     {% endfor %}
   </ul>
 {% else %}
-  <p>No issues assigned.</p>
+  <p>No issues assigned to you.</p>
 {% endif %}
