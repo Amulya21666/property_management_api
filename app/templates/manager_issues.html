@@ -6,7 +6,7 @@
       <li class="list-group-item">
         <strong>Appliance:</strong> {{ issue.appliance.name if issue.appliance else 'N/A' }} <br>
         <strong>Description:</strong> {{ issue.description }} <br>
-        <strong>Status:</strong> {{ issue.status.value.capitalize() }} <br>
+        <strong>Status:</strong> {{ issue.status.capitalize() }} <br>
         <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
         <strong>Vendor:</strong> {{ issue.vendor.name if issue.vendor else 'Not assigned' }} <br>
         <strong>Date:</strong>
