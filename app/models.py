@@ -162,8 +162,8 @@ class Vendor(Base):
     service_type = Column(String, nullable=False)  # plumber, electrician, etc.
     contact = Column(String, nullable=False)
     category = Column(String, nullable=False)
-    issues = relationship("Issue", back_populates="vendor", foreign_keys=[lambda: Issue.vendor_id])
-# ----------------------
+    issues = relationship("Issue", back_populates="vendor", foreign_keys="Issue.vendor_id")
+    # ----------------------
 # Issue model
 # ---------------
 
