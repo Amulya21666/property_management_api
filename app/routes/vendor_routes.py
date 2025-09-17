@@ -52,3 +52,26 @@ def delete_vendor(vendor_id: int, db: Session = Depends(get_db), current_user: U
         db.delete(vendor)
         db.commit()
     return RedirectResponse(url="/owner/manage_vendors", status_code=303)
+
+
+
+
+@router.get("/vendor/issues")
+def vendor_issues(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # Get issues assigned to this vendor
+    issues = db.query(Issue).filter(Issue.vendor_id == current_user.id).all()
+    return templates.TemplateResponse("vendor_issues.html", {"request": request, "issues": issues})
+
+
+@router.post("/vendor/submit_bill/{issue_id}")
+def submit_bill(issue_id: int, bill_amount: float = Form(...), db: Session = Depends(get_db),
+                current_user: User = Depends(get_current_user)):
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.vendor_id == current_user.id).first()
+    if not issue:
+        return RedirectResponse("/vendor/issues", status_code=302)
+
+    issue.bill_amount = bill_amount
+    issue.status = "completed"
+    issue.completed_at = datetime.utcnow()
+    db.commit()
+    return RedirectResponse("/vendor/issues", status_code=302)
