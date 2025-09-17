@@ -3,7 +3,7 @@
 {% if issues %}
   <ul class="list-group">
     {% for issue in issues %}
-      <li class="list-group-item">
+      <li class="list-group-item mb-3">
         <strong>Appliance:</strong> {{ issue.appliance.name if issue.appliance else 'N/A' }} <br>
         <strong>Description:</strong> {{ issue.description }} <br>
         <strong>Status:</strong> {{ issue.status.capitalize() if issue.status else 'N/A' }} <br>
@@ -12,7 +12,7 @@
         <strong>Vendor:</strong>
         {% if issue.status.lower() == "pending" %}
           <!-- Show dropdown to assign vendor -->
-          <form action="/manager/assign_vendor/{{ issue.id }}" method="post" class="mt-2">
+          <form action="/manager/assign_vendor/{{ issue.id }}" method="post" class="mt-2 mb-2">
             <div class="input-group">
               <select name="vendor_id" class="form-select" required>
                 <option value="" disabled selected>Select Vendor</option>
@@ -28,7 +28,7 @@
         {% endif %}
         <br>
 
-        <strong>Date:</strong>
+        <strong>Date Reported:</strong>
         {% if issue.created_at %}
           {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
         {% else %}
