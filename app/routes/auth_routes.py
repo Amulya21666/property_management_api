@@ -403,30 +403,26 @@ def tenant_queries_list(request: Request, db: Session = Depends(get_db), user=De
 
 from fastapi import Form
 
-@router.post("/manager/assign_worker/{issue_id}")
+@router.post("/manager/assign_vendor/{issue_id}")
 def assign_worker(
     issue_id: int,
-    worker: str = Form(...),   # worker = vendor_id or vendor_name (depends on your model)
+    vendor_id: str = Form(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if current_user.role != "manager":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # 🔎 Fetch issue
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
     if not issue:
         raise HTTPException(status_code=404, detail="Issue not found")
 
-    # 🔎 Fetch vendor/worker
-    vendor = db.query(Vendor).filter(Vendor.id == int(worker)).first()
+    vendor = db.query(Vendor).filter(Vendor.id == int(vendor_id)).first()
     if not vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
 
-    # ✅ Assign issue to vendor
     issue.assigned_to = vendor.id
     issue.status = IssueStatus.assigned
-
     db.commit()
 
     return RedirectResponse(url="/manager/issues", status_code=303)
