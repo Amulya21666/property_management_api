@@ -429,3 +429,5 @@ def assign_worker(
     db.commit()
 
     return RedirectResponse(url="/manager/issues", status_code=303)
+
+

@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 # --- Import all your route files ---
-from app.routes import auth_routes, dashboard_routes, floor_routes, otp_routes, tenant_routes
+from app.routes import auth_routes, dashboard_routes, floor_routes, otp_routes, tenant_routes, vendor_routes
 from app.database import engine, Base
 
 # ✅ Initialize FastAPI app
@@ -32,6 +32,7 @@ app.include_router(dashboard_routes.router)
 app.include_router(floor_routes.router)
 app.include_router(otp_routes.router)
 app.include_router(tenant_routes.router)
+app.include_router(vendor_routes.router)
 
 # ✅ Redirect root to /login
 @app.get("/")

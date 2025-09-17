@@ -153,19 +153,14 @@ class ActivityLog(Base):
 # ----------------------
 # Vendor model
 # ----------------------
+# app/models.py
 class Vendor(Base):
     __tablename__ = "vendors"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
-    service_type = Column(String(100), nullable=False)
-    contact = Column(String(100), nullable=True)
-    rating = Column(Float, default=0.0)
-    total_jobs = Column(Integer, default=0)
-
-    issues = relationship("Issue", back_populates="vendor", cascade="all, delete-orphan")
-
-
+    name = Column(String, nullable=False)
+    service_type = Column(String, nullable=False)  # plumber, electrician, etc.
+    contact = Column(String, nullable=False)
 # ----------------------
 # Issue model
 # ----------------------
