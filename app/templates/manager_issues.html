@@ -10,21 +10,21 @@
         <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
 
         <strong>Vendor:</strong>
-        {% if not issue.assigned_to %}
+        {% if not issue.vendor %}
           <!-- Show dropdown to assign vendor if none assigned -->
           <form action="/manager/assign_vendor/{{ issue.id }}" method="post" class="mt-2 mb-2">
             <div class="input-group">
-              <select name="worker" class="form-select" required>
+              <select name="vendor_id" class="form-select" required>
                 <option value="" disabled selected>Select Vendor</option>
                 {% for vendor in vendors %}
-                  <option value="{{ vendor.id }}">{{ vendor.name }} ({{ vendor.specialization }})</option>
+                  <option value="{{ vendor.id }}">{{ vendor.name }} ({{ vendor.service_type }})</option>
                 {% endfor %}
               </select>
               <button type="submit" class="btn btn-primary btn-sm">Assign</button>
             </div>
           </form>
         {% else %}
-          {{ issue.vendor.name if issue.vendor else 'Not assigned' }}
+          {{ issue.vendor.name }} ({{ issue.vendor.service_type }})
         {% endif %}
         <br>
 
@@ -37,7 +37,7 @@
         <br>
 
         {% if issue.status.lower() == 'repaired' %}
-          <strong>Bill:</strong> {{ issue.cost if issue.cost else 'N/A' }} <br>
+          <strong>Bill:</strong> {{ issue.bill_amount if issue.bill_amount else 'N/A' }} <br>
           {% if issue.bill_url %}
             <strong>Bill File:</strong> <a href="{{ issue.bill_url }}" target="_blank">View</a> <br>
           {% endif %}
