@@ -189,6 +189,7 @@ class Issue(Base):
     id = Column(Integer, primary_key=True, index=True)
     description = Column(Text, nullable=False)
     status = Column(String, default=IssueStatus.pending)
+    cost = Column(Float, nullable=True)
     # use enum default
     assigned_to = Column(Integer, ForeignKey("vendors.id"), nullable=True)
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
