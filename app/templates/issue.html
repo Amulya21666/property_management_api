@@ -1,0 +1,15 @@
+<!-- app/templates/manager/issues.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manager Issues</title>
+</head>
+<body>
+    <h1>All Vendors</h1>
+    <ul>
+        {% for vendor in vendors %}
+            <li>{{ vendor.name }} ({{ vendor.service_type }})</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
