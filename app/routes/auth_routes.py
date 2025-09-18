@@ -11,7 +11,7 @@ from app import crud
 from app.models import User, Property, Appliance, PendingTenant, Issue, IssueStatus
 from app.crud import create_user, get_user_by_email
 from app.utils import hash_password, verify_password, send_otp_email, get_current_user, send_activation_email
-
+import os
 
 
 
@@ -406,40 +406,46 @@ from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Issue, Vendor, User
+from app.models import Issue, User
 from app.utils import get_current_user
-
-
 @router.post("/manager/assign_vendor/{issue_id}")
-def assign_vendor(issue_id: int, vendor_id: int = Form(...),
-                  db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-
+def assign_vendor(
+    issue_id: int,
+    vendor_id: int = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     if current_user.role not in ("manager", "owner"):
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # Fetch issue
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
-    vendor = db.query(Vendor).filter(Vendor.id == vendor_id).first()
-    if not issue or not vendor:
-        raise HTTPException(status_code=404, detail="Issue or vendor not found")
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
 
-    import secrets
-    token = secrets.token_urlsafe(16)   # 🔑 Generate secure token
+    # Fetch vendor as a User with role 'vendor'
+    vendor = db.query(User).filter(User.id == vendor_id, User.role == "vendor").first()
+    if not vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
 
+    # Update issue
     issue.assigned_to = vendor.id
-    issue.vendor_token = token
     issue.assigned_at = datetime.utcnow()
     issue.status = IssueStatus.assigned
     db.commit()
+    db.refresh(issue)
 
-    link = f"{BASE_URL}/vendor/respond/{issue.id}?token={token}"
+    # Build vendor link (without token)
+    link = f"{BASE_URL}/vendor/respond/{issue.id}"
 
+    # Send email to vendor
     subject = f"Repair assigned — Issue #{issue.id}"
     body = f"""
-Hello {vendor.name},
+Hello {vendor.username},
 
 You have been assigned Issue #{issue.id}.
 
-Appliance: {issue.appliance}
+Appliance: {issue.appliance.name if issue.appliance else 'N/A'}
 Description: {issue.description}
 
 Submit repair notes and bill here:
@@ -449,7 +455,7 @@ Thanks.
 """
     try:
         from app.utils import send_email
-        send_email(vendor.contact, subject, body)  # contact = email
+        send_email(vendor.email, subject, body)
     except Exception:
         print("[assign_vendor] email fallback — link:", link)
 
