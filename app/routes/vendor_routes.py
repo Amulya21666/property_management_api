@@ -50,7 +50,6 @@ def vendor_issues(
     if current_user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # ✅ Corrected: use assigned_to
     assigned_issues = (
         db.query(Issue)
         .options(
@@ -58,7 +57,7 @@ def vendor_issues(
             joinedload(Issue.appliance),
             joinedload(Issue.tenant)
         )
-        .filter(Issue.assigned_to == current_user.id)
+        .filter(Issue.vendor_id == user.id, Issue.status == IssueStatus.assigned)
         .all()
     )
 
