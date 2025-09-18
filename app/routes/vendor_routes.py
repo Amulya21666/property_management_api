@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse
@@ -13,11 +12,15 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
+# -------------------------------
+# Vendor Dashboard
+# -------------------------------
 @router.get("/vendor/dashboard", response_class=HTMLResponse)
 def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # ✅ Corrected: use assigned_to (as set by manager) instead of vendor_id
     assigned_issues = (
         db.query(Issue)
         .options(
@@ -25,7 +28,7 @@ def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User
             joinedload(Issue.appliance),
             joinedload(Issue.tenant)
         )
-        .filter(Issue.vendor_id == user.id, Issue.status == IssueStatus.assigned)
+        .filter(Issue.assigned_to == user.id, Issue.status == IssueStatus.assigned)
         .all()
     )
 
@@ -33,6 +36,41 @@ def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User
         "vendor_dashboard.html",
         {"request": request, "user": user, "assigned_issues": assigned_issues}
     )
+
+
+# -------------------------------
+# Vendor Issues Page
+# -------------------------------
+@router.get("/vendor/issues", response_class=HTMLResponse)
+def vendor_issues(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # ✅ Corrected: use assigned_to
+    assigned_issues = (
+        db.query(Issue)
+        .options(
+            joinedload(Issue.property),
+            joinedload(Issue.appliance),
+            joinedload(Issue.tenant)
+        )
+        .filter(Issue.assigned_to == current_user.id)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        "vendor_issues.html",
+        {
+            "request": request,
+            "assigned_issues": assigned_issues,
+            "user": current_user,
+        }
+    )
+
 
 # -------------------------------
 # Vendor marks issue as repaired
