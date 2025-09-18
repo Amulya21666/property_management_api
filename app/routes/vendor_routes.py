@@ -19,7 +19,8 @@ def vendor_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
         raise HTTPException(status_code=403, detail="Not authorized")
 
     # Fetch issues assigned to this vendor
-    assigned_issues = db.query(Issue).filter(Issue.assigned_to == user.id).all()
+
+    assigned_issues = db.query(Issue).filter(Issue.vendor_id == user.id).all()
 
     return templates.TemplateResponse("vendor_dashboard.html", {
         "request": request,
@@ -63,22 +64,28 @@ def mark_issue_repaired(
 
 @router.post("/vendor/accept_issue/{issue_id}")
 def accept_issue(issue_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.assigned_to == user.id).first()
+    if user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.vendor_id == user.id).first()
     if not issue:
         raise HTTPException(status_code=404, detail="Issue not found")
 
-    issue.status = IssueStatus.in_progress
+    issue.status = IssueStatus.assigned   # ✅ use existing status
     db.commit()
     return RedirectResponse("/vendor/dashboard", status_code=303)
 
 
 @router.post("/vendor/reject_issue/{issue_id}")
 def reject_issue(issue_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.assigned_to == user.id).first()
+    if user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.vendor_id == user.id).first()
     if not issue:
         raise HTTPException(status_code=404, detail="Issue not found")
 
-    issue.status = IssueStatus.pending
-    issue.assigned_to = None
+    issue.status = IssueStatus.pending   # ✅ back to pending
+    issue.vendor_id = None               # ✅ unassign vendor
     db.commit()
     return RedirectResponse("/vendor/dashboard", status_code=303)
