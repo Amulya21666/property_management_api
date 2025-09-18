@@ -17,37 +17,14 @@
             <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
             <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
             <td>{{ issue.description }}</td>
-            <td>{{ issue.status.value if issue.status else 'N/A' }}</td>
+            <td>{{ issue.status.value }}</td>
             <td>
-                {% if issue.status.value == 'assigned' %}
-                    <form method="post" action="/vendor/accept_issue/{{ issue.id }}" style="display:inline">
-                        <button class="btn btn-sm btn-success">Accept</button>
-                    </form>
-                    <form method="post" action="/vendor/reject_issue/{{ issue.id }}" style="display:inline">
-                        <button class="btn btn-sm btn-danger">Reject</button>
-                    </form>
-                {% elif issue.status.value == 'in_progress' %}
-                    <form action="/vendor/mark_repaired/{{ issue.id }}" method="post" enctype="multipart/form-data">
-                        <div class="mb-2">
-                            <label>Repair Notes:</label>
-                            <textarea name="repair_notes" rows="2" required></textarea>
-                        </div>
-                        <div class="mb-2">
-                            <label>Bill Amount (₹):</label>
-                            <input type="number" step="0.01" name="bill_amount" required>
-                        </div>
-                        <button type="submit">Mark as Repaired</button>
-                    </form>
-                {% elif issue.status.value == 'repaired' %}
-                    ✅ Repair Notes: {{ issue.repair_notes or 'N/A' }} <br>
-                    ✅ Bill Amount: {{ issue.bill_amount or 'N/A' }} <br>
-                    {% if issue.bill_url %}
-                        ✅ Bill File: <a href="{{ issue.bill_url }}" target="_blank">View</a> <br>
-                    {% endif %}
-                    ✅ Completed At: {{ issue.completed_at.strftime('%Y-%m-%d %H:%M') if issue.completed_at else 'N/A' }}
-                {% else %}
-                    -
-                {% endif %}
+                <form method="post" action="/vendor/accept_issue/{{ issue.id }}" style="display:inline">
+                    <button class="btn btn-success btn-sm">Accept</button>
+                </form>
+                <form method="post" action="/vendor/reject_issue/{{ issue.id }}" style="display:inline">
+                    <button class="btn btn-danger btn-sm">Reject</button>
+                </form>
             </td>
         </tr>
         {% endfor %}

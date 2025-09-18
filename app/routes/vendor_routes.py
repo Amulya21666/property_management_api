@@ -25,48 +25,14 @@ def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User
             joinedload(Issue.appliance),
             joinedload(Issue.tenant)
         )
-        .filter(Issue.vendor_id == user.id)  # Only issues assigned to this vendor
+        .filter(Issue.vendor_id == user.id, Issue.status == IssueStatus.assigned)
         .all()
     )
 
-    print("DEBUG: Assigned issues for vendor", assigned_issues)  # 👈 add this to check
     return templates.TemplateResponse(
         "vendor_dashboard.html",
         {"request": request, "user": user, "assigned_issues": assigned_issues}
     )
-
-# -------------------------------
-# Vendor Issues Page
-# -------------------------------
-@router.get("/vendor/issues", response_class=HTMLResponse)
-def vendor_issues(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    if current_user.role != "vendor":
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    assigned_issues = (
-        db.query(Issue)
-        .options(
-            joinedload(Issue.property),
-            joinedload(Issue.appliance),
-            joinedload(Issue.tenant)
-        )
-        .filter(Issue.vendor_id == current_user.id)
-        .all()
-    )
-
-    return templates.TemplateResponse(
-        "vendor_issues.html",
-        {
-            "request": request,
-            "assigned_issues": assigned_issues,
-            "user": current_user,
-        }
-    )
-
 
 # -------------------------------
 # Vendor marks issue as repaired
