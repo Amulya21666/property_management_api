@@ -12,6 +12,7 @@ import enum
 # ----------------------
 # User model
 # ----------------------
+# ----------------------
 class User(Base):
     __tablename__ = "users"
 
@@ -35,19 +36,59 @@ class User(Base):
     room_no = Column(String(50), nullable=True)
 
     # Relationships
-    properties_as_tenant = relationship("Property", back_populates="tenants", foreign_keys=[property_id])
+    properties_as_tenant = relationship(
+        "Property", back_populates="tenants", foreign_keys=[property_id]
+    )
     floor = relationship("Floor", foreign_keys=[floor_id])
-    appliances = relationship("Appliance", back_populates="user", cascade="all, delete-orphan")
-    properties_owned = relationship("Property", back_populates="owner", foreign_keys="Property.owner_id")
-    properties_managed = relationship("Property", back_populates="manager", foreign_keys="Property.manager_id")
-    activity_logs = relationship("ActivityLog", back_populates="user_obj", cascade="all, delete-orphan")
+    appliances = relationship(
+        "Appliance", back_populates="user", cascade="all, delete-orphan"
+    )
+    properties_owned = relationship(
+        "Property", back_populates="owner", foreign_keys="Property.owner_id"
+    )
+    properties_managed = relationship(
+        "Property", back_populates="manager", foreign_keys="Property.manager_id"
+    )
+    activity_logs = relationship(
+        "ActivityLog", back_populates="user_obj", cascade="all, delete-orphan"
+    )
     service_type = Column(String(50), nullable=True)
+
     # Issues reported by tenant
-    issues_reported = relationship("Issue", back_populates="tenant", cascade="all, delete-orphan")
+    issues_reported = relationship(
+        "Issue",
+        back_populates="tenant",
+        cascade="all, delete-orphan",
+        foreign_keys="Issue.tenant_id"
+    )
+
+    # Issues assigned as vendor
+    issues_assigned = relationship(
+        "Issue",
+        back_populates="vendor",
+        cascade="all, delete-orphan",
+        foreign_keys="Issue.vendor_id"
+    )
 
     # Queries raised by tenant
-    tenant_queries = relationship("TenantQuery", back_populates="reported_by", cascade="all, delete-orphan")
+    tenant_queries = relationship(
+        "TenantQuery", back_populates="reported_by", cascade="all, delete-orphan"
+    )
 
+# ----------------------
+# Enums
+# ----------------------
+class IssueStatus(str, Enum):
+    pending = "pending"
+    assigned = "assigned"
+    repaired = "repaired"
+    paid = "paid"
+
+class WorkerType(str, Enum):
+    electrician = "Electrician"
+    plumber = "Plumber"
+    carpenter = "Carpenter"
+    other = "Other"
 
 # ----------------------
 # Property model
@@ -153,24 +194,7 @@ class ActivityLog(Base):
 
 # Issue model
 # ---------------
-
-# ✅ Top-level enums
-class IssueStatus(str, Enum):
-    pending = "pending"
-    assigned = "assigned"
-    repaired = "repaired"
-    paid = "paid"
-
-
-class WorkerType(str, Enum):
-    electrician = "Electrician"
-    plumber = "Plumber"
-    carpenter = "Carpenter"
-    other = "Other"
-
-    # ✅ Issue model
-
-
+# ----------------------
 class Issue(Base):
     __tablename__ = "issues"
 
@@ -181,16 +205,28 @@ class Issue(Base):
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
+    vendor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     completed_at = Column(DateTime, nullable=True)
     bill_amount = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
-    tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
-    property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
-    vendor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    vendor = relationship("User", foreign_keys=[vendor_id])
-    appliance = relationship("Appliance", back_populates="issues", foreign_keys=[appliance_id])
+    tenant = relationship(
+        "User",
+        back_populates="issues_reported",
+        foreign_keys=[tenant_id]
+    )
+    vendor = relationship(
+        "User",
+        back_populates="issues_assigned",
+        foreign_keys=[vendor_id]
+    )
+    property = relationship(
+        "Property", back_populates="issues", foreign_keys=[property_id]
+    )
+    appliance = relationship(
+        "Appliance", back_populates="issues", foreign_keys=[appliance_id]
+    )
 
 
 # TenantQuery model
