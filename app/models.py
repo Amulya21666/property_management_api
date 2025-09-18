@@ -209,7 +209,8 @@ class Issue(Base):
     completed_at = Column(DateTime, nullable=True)
     bill_amount = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
+    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)  # ✅ Add this
+    assigned_at = Column(DateTime, nullable=True)  # Optional timestamp
     # Relationships
     tenant = relationship(
         "User",
