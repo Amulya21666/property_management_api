@@ -14,17 +14,18 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/vendor/dashboard", response_class=HTMLResponse)
-def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def vendor_dashboard(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
     if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Get issues assigned to this vendor
+    # Fetch issues assigned to this vendor
     assigned_issues = db.query(Issue).filter(Issue.assigned_to == user.id).all()
 
-    return templates.TemplateResponse(
-        "vendor_dashboard.html",
-        {"request": request, "user": user, "issues": assigned_issues}
-    )
+    return templates.TemplateResponse("vendor_dashboard.html", {
+        "request": request,
+        "user": user,
+        "assigned_issues": assigned_issues
+    })
 
 
 

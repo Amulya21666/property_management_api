@@ -11,7 +11,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for issue in issues %}
+        {% for issue in assigned_issues %}
         <tr>
             <td>{{ issue.id }}</td>
             <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
@@ -19,15 +19,13 @@
             <td>{{ issue.description }}</td>
             <td>{{ issue.status.value }}</td>
             <td>
-                {% if issue.status.value == 'assigned' %}
-                <form method="post" action="/vendor/accept_issue/{{ issue.id }}" style="display:inline">
-                    <button type="submit">Accept</button>
-                </form>
-                <form method="post" action="/vendor/reject_issue/{{ issue.id }}" style="display:inline">
-                    <button type="submit">Reject</button>
+                {% if issue.status == 'assigned' %}
+                <form method="post" action="/vendor/respond/{{ issue.id }}">
+                    <button name="action" value="accept">Accept</button>
+                    <button name="action" value="reject">Reject</button>
                 </form>
                 {% else %}
-                    -
+                -
                 {% endif %}
             </td>
         </tr>

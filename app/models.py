@@ -7,6 +7,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
+from sqlalchemy import Enum as SqlEnum
+
 import enum
 
 # ----------------------
@@ -78,17 +80,6 @@ class User(Base):
 # ----------------------
 # Enums
 # ----------------------
-class IssueStatus(str, Enum):
-    pending = "pending"
-    assigned = "assigned"
-    repaired = "repaired"
-    paid = "paid"
-
-class WorkerType(str, Enum):
-    electrician = "Electrician"
-    plumber = "Plumber"
-    carpenter = "Carpenter"
-    other = "Other"
 
 # ----------------------
 # Property model
@@ -108,7 +99,6 @@ class Property(Base):
     owner = relationship("User", back_populates="properties_owned", foreign_keys=[owner_id])
     manager = relationship("User", back_populates="properties_managed", foreign_keys=[manager_id])
     tenants = relationship("User", back_populates="properties_as_tenant", foreign_keys=[User.property_id])
-
     appliances = relationship("Appliance", back_populates="property", cascade="all, delete-orphan")
     floors = relationship("Floor", back_populates="property", cascade="all, delete-orphan")
     tenant_queries = relationship("TenantQuery", back_populates="property", cascade="all, delete-orphan")
@@ -195,6 +185,21 @@ class ActivityLog(Base):
 # Issue model
 # ---------------
 # ----------------------
+
+
+class IssueStatus(str, Enum):
+    pending = "pending"
+    assigned = "assigned"
+    in_progress = "in_progress"
+    resolved = "resolved"
+    rejected = "rejected"
+
+class WorkerType(str, Enum):
+    electrician = "Electrician"
+    plumber = "Plumber"
+    carpenter = "Carpenter"
+    other = "Other"
+
 class Issue(Base):
     __tablename__ = "issues"
 
@@ -206,6 +211,7 @@ class Issue(Base):
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
     vendor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    status = Column(SqlEnum(IssueStatus), default=IssueStatus.pending, nullable=False)  # ✅ correct place
     completed_at = Column(DateTime, nullable=True)
     bill_amount = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
