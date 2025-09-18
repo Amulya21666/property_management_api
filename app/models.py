@@ -195,6 +195,7 @@ class Issue(Base):
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
+    vendor_token = Column(String, nullable=True, unique=True)# only one FK
     completed_at = Column(DateTime, nullable=True)
     bill_amount = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

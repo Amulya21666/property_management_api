@@ -129,7 +129,11 @@ def vendor_respond(request: Request, issue_id: int, token: str, db: Session = De
     if not issue:
         return HTMLResponse("<h3>❌ Invalid or expired link.</h3>", status_code=400)
 
-    return templates.TemplateResponse("vendor_respond.html", {"request": request, "issue": issue, "token": token})
+    return templates.TemplateResponse("vendor_respond.html", {
+        "request": request,
+        "issue": issue,
+        "token": token
+    })
 
 @router.post("/vendor/respond/{issue_id}")
 def vendor_submit(issue_id: int, token: str, repair_notes: str = Form(...), bill_amount: float = Form(...),
@@ -142,7 +146,7 @@ def vendor_submit(issue_id: int, token: str, repair_notes: str = Form(...), bill
     issue.bill_amount = bill_amount
     issue.status = IssueStatus.repaired
     issue.completed_at = datetime.utcnow()
-    issue.vendor_token = None  # invalidate token
+    issue.vendor_token = None  # 🔒 Invalidate token after use
     db.commit()
 
     return HTMLResponse("<h3>✅ Bill submitted successfully!</h3>")

@@ -405,35 +405,51 @@ from app.models import Issue, Vendor, User
 from app.utils import get_current_user
 
 
-
 @router.post("/manager/assign_vendor/{issue_id}")
-def assign_vendor(
-    issue_id: int,
-    vendor_id: int = Form(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
+def assign_vendor(issue_id: int, vendor_id: int = Form(...),
+                  db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+
     if current_user.role not in ("manager", "owner"):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
     vendor = db.query(Vendor).filter(Vendor.id == vendor_id).first()
-
     if not issue or not vendor:
         raise HTTPException(status_code=404, detail="Issue or vendor not found")
 
-    # ✅ Assign vendor
-    issue.vendor_id = vendor.id
-    issue.vendor_token = str(uuid.uuid4())
-    issue.status = IssueStatus.assigned
+    import secrets
+    token = secrets.token_urlsafe(16)   # 🔑 Generate secure token
+
+    issue.assigned_to = vendor.id
+    issue.vendor_token = token
     issue.assigned_at = datetime.utcnow()
+    issue.status = IssueStatus.assigned
     db.commit()
 
-    # ✅ Generate link
-    vendor_link = f"http://localhost:8000/vendor/respond/{issue.id}?token={issue.vendor_token}"
-    print("Vendor link:", vendor_link)  # replace with email sending
+    link = f"{BASE_URL}/vendor/respond/{issue.id}?token={token}"
+
+    subject = f"Repair assigned — Issue #{issue.id}"
+    body = f"""
+Hello {vendor.name},
+
+You have been assigned Issue #{issue.id}.
+
+Appliance: {issue.appliance}
+Description: {issue.description}
+
+Submit repair notes and bill here:
+{link}
+
+Thanks.
+"""
+    try:
+        from app.utils import send_email
+        send_email(vendor.contact, subject, body)  # contact = email
+    except Exception:
+        print("[assign_vendor] email fallback — link:", link)
 
     return RedirectResponse(url="/manager/issues", status_code=303)
+
 
 @router.post("/manager/approve_bill/{issue_id}")
 def approve_bill(
