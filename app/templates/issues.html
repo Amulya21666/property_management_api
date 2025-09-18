@@ -12,9 +12,13 @@
         <thead>
             <tr>
                 <th>Issue ID</th>
+                <th>Tenant</th>
+                <th>Home / Property</th>
+                <th>Flat / Room</th>
                 <th>Appliance</th>
                 <th>Description</th>
                 <th>Status</th>
+                <th>Raised On</th>
                 <th>Assign Vendor</th>
             </tr>
         </thead>
@@ -22,20 +26,54 @@
             {% for issue in issues %}
             <tr>
                 <td>{{ issue.id }}</td>
+                <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
+                <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
+                <td>
+                    {% if issue.tenant %}
+                        {{ issue.tenant.flat_no or '' }} {{ issue.tenant.room_no or '' }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
                 <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
                 <td>{{ issue.description }}</td>
                 <td>{{ issue.status.value }}</td>
+                <td>{{ issue.created_at.strftime("%Y-%m-%d %H:%M") if issue.created_at else 'N/A' }}</td>
                 <td>
                     <form method="post" action="/manager/assign_vendor/{{ issue.id }}">
                         <select name="vendor_id" required>
                             <option value="">Select Vendor</option>
                             {% for vendor in vendors %}
-                                <option value="{{ vendor.id }}">{{ vendor.username }}</option>
+                                <option value="{{ vendor.id }}">
+                                    {{ vendor.username }} {% if vendor.service_type %}({{ vendor.service_type }}){% endif %}
+                                </option>
                             {% endfor %}
                         </select>
                         <button type="submit">Assign</button>
                     </form>
                 </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>All Vendors</h3>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Vendor ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Service Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor.id }}</td>
+                <td>{{ vendor.username }}</td>
+                <td>{{ vendor.email }}</td>
+                <td>{{ vendor.service_type or 'N/A' }}</td>
             </tr>
             {% endfor %}
         </tbody>
