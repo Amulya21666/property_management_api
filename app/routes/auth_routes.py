@@ -438,3 +438,15 @@ def assign_vendor(
     print("Vendor link:", vendor_link)
 
     return RedirectResponse(url="/manager/issues", status_code=303)
+
+@router.post("/manager/approve_bill/{issue_id}")
+def approve_bill(issue_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role not in ("manager","owner"):
+        raise HTTPException(status_code=403)
+    issue = db.query(Issue).filter(Issue.id == issue_id).first()
+    if not issue:
+        raise HTTPException(status_code=404)
+    issue.status = IssueStatus.paid   # add paid to your enum
+    issue.paid_at = datetime.utcnow()
+    db.commit()
+    return RedirectResponse("/manager/issues", status_code=303)

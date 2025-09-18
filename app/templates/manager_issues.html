@@ -11,7 +11,7 @@
 
         <strong>Vendor:</strong>
         {% if not issue.vendor %}
-          <!-- Show dropdown to assign vendor if none assigned -->
+          <!-- Vendor dropdown (only if not assigned) -->
           <form action="/manager/assign_vendor/{{ issue.id }}" method="post" class="mt-2 mb-2">
             <div class="input-group">
               <select name="vendor_id" class="form-select" required>
@@ -29,24 +29,16 @@
         <br>
 
         <strong>Date Reported:</strong>
-        {% if issue.created_at %}
-          {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
-        {% else %}
-          N/A
-        {% endif %}
-        <br>
+        {{ issue.created_at.strftime('%Y-%m-%d %H:%M') if issue.created_at else 'N/A' }} <br>
 
-        {% if issue.status.lower() == 'repaired' %}
-          <strong>Bill:</strong> {{ issue.bill_amount if issue.bill_amount else 'N/A' }} <br>
+        {% if issue.status and issue.status.lower() == 'repaired' %}
+          <strong>Repair Notes:</strong> {{ issue.repair_notes if issue.repair_notes else 'N/A' }} <br>
+          <strong>Bill Amount:</strong> {{ issue.bill_amount if issue.bill_amount else 'N/A' }} <br>
           {% if issue.bill_url %}
             <strong>Bill File:</strong> <a href="{{ issue.bill_url }}" target="_blank">View</a> <br>
           {% endif %}
           <strong>Completed At:</strong>
-          {% if issue.completed_at %}
-            {{ issue.completed_at.strftime('%Y-%m-%d %H:%M') }}
-          {% else %}
-            N/A
-          {% endif %}
+          {{ issue.completed_at.strftime('%Y-%m-%d %H:%M') if issue.completed_at else 'N/A' }}
         {% endif %}
       </li>
     {% endfor %}

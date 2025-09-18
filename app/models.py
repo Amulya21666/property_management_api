@@ -172,6 +172,7 @@ class IssueStatus(str, Enum):
     pending = "pending"
     assigned = "assigned"
     repaired = "repaired"
+    paid = "paid"
 
 
 class WorkerType(str, Enum):
