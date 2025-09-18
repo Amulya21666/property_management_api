@@ -1,46 +1,46 @@
-<h3>My Assigned Issues</h3>
-
-{% if issues %}
-  <ul class="list-group">
-    {% for issue in issues %}
-      <li class="list-group-item mb-3">
-        <strong>Appliance:</strong> {{ issue.appliance.name if issue.appliance else 'N/A' }} <br>
-        <strong>Description:</strong> {{ issue.description }} <br>
-        <strong>Status:</strong> {{ issue.status.capitalize() if issue.status else 'N/A' }} <br>
-        <strong>Reported by:</strong> {{ issue.tenant.username if issue.tenant else 'N/A' }} <br>
-        <strong>Date Reported:</strong> {{ issue.created_at.strftime('%Y-%m-%d %H:%M') if issue.created_at else 'N/A' }} <br>
-
-        {% if issue.status and issue.status.lower() != "repaired" %}
-          <!-- Vendor Repair Form -->
-          <form action="/vendor/mark_repaired/{{ issue.id }}" method="post" enctype="multipart/form-data" class="mt-3">
-            <div class="mb-2">
-              <label class="form-label">Repair Notes:</label>
-              <textarea name="repair_notes" class="form-control" rows="3" required></textarea>
-            </div>
-
-            <div class="mb-2">
-              <label class="form-label">Bill Amount (₹):</label>
-              <input type="number" step="0.01" name="bill_amount" required class="form-control">
-            </div>
-
-            <div class="mb-2">
-              <label class="form-label">Upload Bill File (optional):</label>
-              <input type="file" name="bill_file" accept="application/pdf,image/*" class="form-control">
-            </div>
-
-            <button type="submit" class="btn btn-success btn-sm">Mark as Repaired</button>
-          </form>
-        {% else %}
-          ✅ <strong>Repair Notes:</strong> {{ issue.repair_notes if issue.repair_notes else 'N/A' }} <br>
-          ✅ <strong>Bill Amount:</strong> {{ issue.bill_amount if issue.bill_amount else 'N/A' }} <br>
-          {% if issue.bill_url %}
-            ✅ <strong>Bill File:</strong> <a href="{{ issue.bill_url }}" target="_blank">View</a> <br>
-          {% endif %}
-          ✅ <strong>Completed At:</strong> {{ issue.completed_at.strftime('%Y-%m-%d %H:%M') if issue.completed_at else 'N/A' }}
-        {% endif %}
-      </li>
+<tbody>
+    {% for issue in assigned_issues %}
+    <tr>
+        <td>{{ issue.id }}</td>
+        <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
+        <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
+        <td>{{ issue.description }}</td>
+        <td>{{ issue.status.value if issue.status else 'N/A' }}</td>
+        <td>
+            {% if issue.status.value == "assigned" %}
+                <!-- Accept / Reject Buttons -->
+                <form method="post" action="/vendor/respond/{{ issue.id }}">
+                    <button name="action" value="accept" class="btn btn-sm btn-success">Accept</button>
+                    <button name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
+                </form>
+            {% elif issue.status.value == "in_progress" %}
+                <!-- Vendor Repair Form -->
+                <form action="/vendor/mark_repaired/{{ issue.id }}" method="post" enctype="multipart/form-data">
+                    <div class="mb-2">
+                        <label class="form-label">Repair Notes:</label>
+                        <textarea name="repair_notes" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Bill Amount (₹):</label>
+                        <input type="number" step="0.01" name="bill_amount" required class="form-control">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Upload Bill File:</label>
+                        <input type="file" name="bill_file" accept="application/pdf,image/*" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Mark as Repaired</button>
+                </form>
+            {% elif issue.status.value == "resolved" %}
+                ✅ <strong>Repair Notes:</strong> {{ issue.repair_notes or 'N/A' }} <br>
+                ✅ <strong>Bill Amount:</strong> {{ issue.bill_amount or 'N/A' }} <br>
+                {% if issue.bill_url %}
+                    ✅ <strong>Bill File:</strong> <a href="{{ issue.bill_url }}" target="_blank">View</a> <br>
+                {% endif %}
+                ✅ <strong>Completed At:</strong> {{ issue.completed_at.strftime('%Y-%m-%d %H:%M') if issue.completed_at else 'N/A' }}
+            {% else %}
+                -
+            {% endif %}
+        </td>
+    </tr>
     {% endfor %}
-  </ul>
-{% else %}
-  <p>No issues assigned to you.</p>
-{% endif %}
+</tbody>

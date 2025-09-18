@@ -89,3 +89,41 @@ def reject_issue(issue_id: int, db: Session = Depends(get_db), user: User = Depe
     issue.vendor_id = None               # ✅ unassign vendor
     db.commit()
     return RedirectResponse("/vendor/dashboard", status_code=303)
+
+from sqlalchemy.orm import joinedload
+
+from sqlalchemy.orm import joinedload
+
+# -------------------------------
+# Vendor Issues Page
+# -------------------------------
+from sqlalchemy.orm import joinedload
+
+@router.get("/vendor/issues", response_class=HTMLResponse)
+def vendor_issues(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    assigned_issues = (
+        db.query(Issue)
+        .options(
+            joinedload(Issue.property),
+            joinedload(Issue.appliance),
+            joinedload(Issue.tenant)  # ✅ so we can show tenant.username
+        )
+        .filter(Issue.vendor_id == current_user.id)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        "vendor_issues.html",
+        {
+            "request": request,
+            "assigned_issues": assigned_issues,
+            "user": current_user,
+        }
+    )
