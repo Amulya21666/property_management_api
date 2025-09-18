@@ -404,49 +404,52 @@ from app.database import get_db
 from app.models import Issue, Vendor, User
 from app.utils import get_current_user
 
-router = APIRouter()
+
 
 @router.post("/manager/assign_vendor/{issue_id}")
 def assign_vendor(
     issue_id: int,
-    vendor_id: str = Form(...),
+    vendor_id: int = Form(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # ✅ Only managers can assign vendors
-    if current_user.role != "manager":
+    if current_user.role not in ("manager", "owner"):
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # ✅ Fetch the issue
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
-    if not issue:
-        raise HTTPException(status_code=404, detail="Issue not found")
+    vendor = db.query(Vendor).filter(Vendor.id == vendor_id).first()
 
-    # ✅ Fetch the vendor
-    vendor = db.query(Vendor).filter(Vendor.id == int(vendor_id)).first()
-    if not vendor:
-        raise HTTPException(status_code=404, detail="Vendor not found")
+    if not issue or not vendor:
+        raise HTTPException(status_code=404, detail="Issue or vendor not found")
 
-    # ✅ Assign vendor & generate secure token
+    # ✅ Assign vendor
     issue.vendor_id = vendor.id
     issue.vendor_token = str(uuid.uuid4())
-    issue.status = "assigned"
+    issue.status = IssueStatus.assigned
+    issue.assigned_at = datetime.utcnow()
     db.commit()
 
-    # ✅ Generate direct vendor link (send via email/SMS in real app)
+    # ✅ Generate link
     vendor_link = f"http://localhost:8000/vendor/respond/{issue.id}?token={issue.vendor_token}"
-    print("Vendor link:", vendor_link)
+    print("Vendor link:", vendor_link)  # replace with email sending
 
     return RedirectResponse(url="/manager/issues", status_code=303)
 
 @router.post("/manager/approve_bill/{issue_id}")
-def approve_bill(issue_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.role not in ("manager","owner"):
+def approve_bill(
+    issue_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role not in ("manager", "owner"):
         raise HTTPException(status_code=403)
+
     issue = db.query(Issue).filter(Issue.id == issue_id).first()
     if not issue:
         raise HTTPException(status_code=404)
-    issue.status = IssueStatus.paid   # add paid to your enum
+
+    issue.status = IssueStatus.paid
     issue.paid_at = datetime.utcnow()
     db.commit()
+
     return RedirectResponse("/manager/issues", status_code=303)
