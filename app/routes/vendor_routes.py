@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Vendor, User, Issue, IssueStatus
+from app.models import  User, Issue, IssueStatus
 from app.utils import get_current_user
 
 router = APIRouter()

@@ -150,29 +150,6 @@ class ActivityLog(Base):
     user_obj = relationship("User", back_populates="activity_logs")
 
 
-# ----------------------
-# Vendor model
-# ----------------------
-# app/models.py
-    from sqlalchemy import Column, Integer, String
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from sqlalchemy.orm import relationship
-from .database import Base
-from datetime import datetime
-
-class Vendor(Base):
-    __tablename__ = "vendors"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    phone = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    is_active = Column(Boolean, default=True)
-
-    # Relationship with issues assigned
-    issues = relationship("Issue", back_populates="vendor")
 
 # Issue model
 # ---------------
@@ -204,7 +181,6 @@ class Issue(Base):
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
-    vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
     completed_at = Column(DateTime, nullable=True)
     bill_amount = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -212,7 +188,8 @@ class Issue(Base):
     # Relationships
     tenant = relationship("User", back_populates="issues_reported", foreign_keys=[tenant_id])
     property = relationship("Property", back_populates="issues", foreign_keys=[property_id])
-    vendor = relationship("Vendor", back_populates="issues", foreign_keys=[vendor_id])
+    vendor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    vendor = relationship("User", foreign_keys=[vendor_id])
     appliance = relationship("Appliance", back_populates="issues", foreign_keys=[appliance_id])
 
 
