@@ -390,7 +390,7 @@ from app.models import User
 def manager_issues(request: Request, db: Session = Depends(get_db)):
     # Get all users with role "vendor"
     vendors = db.query(User).filter(User.role == "vendor").all()
-    return templates.TemplateResponse("manager/issues.html", {"request": request, "vendors": vendors})
+    return templates.TemplateResponse("issues.html", {"request": request, "vendors": vendors})
 
 
 @router.get("/tenant/queries")
