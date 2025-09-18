@@ -418,15 +418,7 @@ def tenant_queries_list(request: Request, db: Session = Depends(get_db), user=De
     queries = db.query(TenantQuery).filter(TenantQuery.reported_by_id == user.id).all()
     return {"queries": queries}
 
-from fastapi import Form
 
-import uuid
-from fastapi import APIRouter, Request, Form, Depends, HTTPException
-from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import Issue, User
-from app.utils import get_current_user
 @router.post("/manager/assign_vendor/{issue_id}")
 def assign_vendor(
     issue_id: int,
@@ -447,36 +439,14 @@ def assign_vendor(
     if not vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
 
-    # Update issue
+    # Assign issue to vendor
     issue.assigned_to = vendor.id
     issue.assigned_at = datetime.utcnow()
     issue.status = IssueStatus.assigned
     db.commit()
     db.refresh(issue)
 
-    # Build vendor link (without token)
-    link = f"{BASE_URL}/vendor/respond/{issue.id}"
-
-    # Send email to vendor
-    subject = f"Repair assigned — Issue #{issue.id}"
-    body = f"""
-Hello {vendor.username},
-
-You have been assigned Issue #{issue.id}.
-
-Appliance: {issue.appliance.name if issue.appliance else 'N/A'}
-Description: {issue.description}
-
-Submit repair notes and bill here:
-{link}
-
-Thanks.
-"""
-    try:
-        from app.utils import send_email
-        send_email(vendor.email, subject, body)
-    except Exception:
-        print("[assign_vendor] email fallback — link:", link)
+    # ✅ No email or link needed now
 
     return RedirectResponse(url="/manager/issues", status_code=303)
 

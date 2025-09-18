@@ -13,18 +13,19 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
-# Vendor Dashboard
 @router.get("/vendor/dashboard", response_class=HTMLResponse)
-def vendor_dashboard(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    issues = db.query(Issue).filter(Issue.vendor_id == user.id).all()  # ✅ no token used
-    return templates.TemplateResponse("vendor_dashboard.html", {
-        "request": request,
-        "user": user,
-        "issues": issues
-    })
+    # Get issues assigned to this vendor
+    assigned_issues = db.query(Issue).filter(Issue.assigned_to == user.id).all()
+
+    return templates.TemplateResponse(
+        "vendor_dashboard.html",
+        {"request": request, "user": user, "issues": assigned_issues}
+    )
+
 
 
 # Vendor issues page
@@ -58,3 +59,25 @@ def mark_issue_repaired(
     db.commit()
 
     return RedirectResponse(url="/vendor/issues", status_code=303)
+
+@router.post("/vendor/accept_issue/{issue_id}")
+def accept_issue(issue_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.assigned_to == user.id).first()
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
+
+    issue.status = IssueStatus.in_progress
+    db.commit()
+    return RedirectResponse("/vendor/dashboard", status_code=303)
+
+
+@router.post("/vendor/reject_issue/{issue_id}")
+def reject_issue(issue_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.assigned_to == user.id).first()
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
+
+    issue.status = IssueStatus.pending
+    issue.assigned_to = None
+    db.commit()
+    return RedirectResponse("/vendor/dashboard", status_code=303)
