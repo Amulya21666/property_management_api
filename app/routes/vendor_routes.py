@@ -13,15 +13,8 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
-# -------------------------------
-# Vendor Dashboard
-# -------------------------------
 @router.get("/vendor/dashboard", response_class=HTMLResponse)
-def vendor_dashboard(
-    request: Request,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
+def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
@@ -32,19 +25,15 @@ def vendor_dashboard(
             joinedload(Issue.appliance),
             joinedload(Issue.tenant)
         )
-        .filter(Issue.vendor_id == user.id)
+        .filter(Issue.vendor_id == user.id)  # Only issues assigned to this vendor
         .all()
     )
 
+    print("DEBUG: Assigned issues for vendor", assigned_issues)  # 👈 add this to check
     return templates.TemplateResponse(
         "vendor_dashboard.html",
-        {
-            "request": request,
-            "user": user,
-            "assigned_issues": assigned_issues
-        }
+        {"request": request, "user": user, "assigned_issues": assigned_issues}
     )
-
 
 # -------------------------------
 # Vendor Issues Page
