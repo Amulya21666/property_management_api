@@ -155,20 +155,25 @@ class ActivityLog(Base):
 # ----------------------
 # app/models.py
     from sqlalchemy import Column, Integer, String
-    from app.database import Base
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.orm import relationship
+from .database import Base
+from datetime import datetime
 
-    class Vendor(Base):
-        __tablename__ = "vendors"
+class Vendor(Base):
+    __tablename__ = "vendors"
 
-        id = Column(Integer, primary_key=True, index=True)
-        name = Column(String, nullable=False)
-        email = Column(String, unique=True, nullable=False)
-        phone = Column(String, nullable=True)
-        password_hash = Column(String, nullable=False)  # for login
-        service_type = Column(String, nullable=True)  # e.g., Electrical, Plumbing
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    phone = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
 
-    issues = relationship("Issue", back_populates="vendor", foreign_keys="Issue.vendor_id")
-    # ----------------------
+    # Relationship with issues assigned
+    issues = relationship("Issue", back_populates="vendor")
+
 # Issue model
 # ---------------
 
@@ -200,7 +205,6 @@ class Issue(Base):
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=True)
-    vendor_token = Column(String, nullable=True, unique=True)# only one FK
     completed_at = Column(DateTime, nullable=True)
     bill_amount = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

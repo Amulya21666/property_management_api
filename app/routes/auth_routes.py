@@ -14,6 +14,8 @@ from app.utils import hash_password, verify_password, send_otp_email, get_curren
 
 
 
+
+
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
