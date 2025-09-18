@@ -80,6 +80,7 @@ def register_post(
     email: str = Form(...),
     password: str = Form(...),
     role: str = Form(...),
+    service_type: str = Form(None),  # ✅ Add this line for vendor
     db: Session = Depends(get_db)
 ):
     try:
@@ -119,8 +120,15 @@ def register_post(
             return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
 
         elif role == "vendor":
-            service_type = request.form.get("service_type")  # from HTML form
-            create_user(db=db, username=username, email=email, password=password, role=role, service_type=service_type)
+            # ✅ Use the Form parameter directly
+            create_user(
+                db=db,
+                username=username,
+                email=email,
+                password=password,
+                role=role,
+                service_type=service_type  # now correctly passed
+            )
             return RedirectResponse(url="/login", status_code=302)
 
         else:
@@ -392,9 +400,16 @@ def manager_issues(request: Request, db: Session = Depends(get_db), current_user
     if current_user.role != "manager":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    vendors = db.query(User).filter(User.role == "vendor").all()
-    return templates.TemplateResponse("issues.html", {"request": request, "vendors": vendors, "user": current_user})
+    # Fetch all pending/assigned issues
+    issues = db.query(Issue).all()  # You can filter by status if needed: .filter(Issue.status != 'paid')
 
+    # Fetch all vendors
+    vendors = db.query(User).filter(User.role == "vendor").all()
+
+    return templates.TemplateResponse(
+        "issues.html",
+        {"request": request, "issues": issues, "vendors": vendors, "user": current_user}
+    )
 
 
 @router.get("/tenant/queries")

@@ -3,25 +3,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Manager Issues</title>
+    <title>Manager - Issues</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h2>All Vendors</h2>
+    <h2>All Reported Issues</h2>
     <table border="1" cellpadding="5">
         <thead>
             <tr>
-                <th>Vendor ID</th>
-                <th>Username</th>
-                <th>Email</th>
+                <th>Issue ID</th>
+                <th>Appliance</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Assign Vendor</th>
             </tr>
         </thead>
         <tbody>
-            {% for vendor in vendors %}
+            {% for issue in issues %}
             <tr>
-                <td>{{ vendor.id }}</td>
-                <td>{{ vendor.username }}</td>
-                <td>{{ vendor.email }}</td>
+                <td>{{ issue.id }}</td>
+                <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
+                <td>{{ issue.description }}</td>
+                <td>{{ issue.status.value }}</td>
+                <td>
+                    <form method="post" action="/manager/assign_vendor/{{ issue.id }}">
+                        <select name="vendor_id" required>
+                            <option value="">Select Vendor</option>
+                            {% for vendor in vendors %}
+                                <option value="{{ vendor.id }}">{{ vendor.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Assign</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
