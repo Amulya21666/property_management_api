@@ -154,14 +154,19 @@ class ActivityLog(Base):
 # Vendor model
 # ----------------------
 # app/models.py
-class Vendor(Base):
-    __tablename__ = "vendors"
+    from sqlalchemy import Column, Integer, String
+    from app.database import Base
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    service_type = Column(String, nullable=False)  # plumber, electrician, etc.
-    contact = Column(String, nullable=False)
-    category = Column(String, nullable=False)
+    class Vendor(Base):
+        __tablename__ = "vendors"
+
+        id = Column(Integer, primary_key=True, index=True)
+        name = Column(String, nullable=False)
+        email = Column(String, unique=True, nullable=False)
+        phone = Column(String, nullable=True)
+        password_hash = Column(String, nullable=False)  # for login
+        service_type = Column(String, nullable=True)  # e.g., Electrical, Plumbing
+
     issues = relationship("Issue", back_populates="vendor", foreign_keys="Issue.vendor_id")
     # ----------------------
 # Issue model

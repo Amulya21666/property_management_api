@@ -13,6 +13,20 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
+@router.get("/vendor/dashboard", response_class=HTMLResponse)
+def vendor_dashboard(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Fetch issues assigned to this vendor
+    issues = db.query(Issue).filter(Issue.vendor_id == user.id).all()
+
+    return templates.TemplateResponse("vendor_dashboard.html", {
+        "request": request,
+        "user": user,
+        "issues": issues
+    })
+
 
 
 # ✅ Show all vendors (Manage Vendors Page)

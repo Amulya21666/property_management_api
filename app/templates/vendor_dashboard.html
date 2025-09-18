@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vendor Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h2>Welcome, {{ user.name }}!</h2>
+        <a href="/logout">Logout</a>
+    </header>
+
+    <main>
+        <h3>Assigned Issues</h3>
+        {% if issues %}
+        <table border="1" cellpadding="10" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Issue ID</th>
+                    <th>Appliance</th>
+                    <th>Property</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Date Reported</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in issues %}
+                <tr>
+                    <td>{{ issue.id }}</td>
+                    <td>{{ issue.appliance.name }}</td>
+                    <td>{{ issue.property.name }}</td>
+                    <td>{{ issue.description }}</td>
+                    <td>{{ issue.status }}</td>
+                    <td>{{ issue.created_at }}</td>
+                    <td>
+                        <!-- Upload Bill -->
+                        <form action="/vendor/upload_bill/{{ issue.id }}" method="post" enctype="multipart/form-data">
+                            <input type="file" name="bill_file" required>
+                            <button type="submit">Upload Bill</button>
+                        </form>
+
+                        <!-- Mark Completed -->
+                        {% if issue.status != 'completed' %}
+                        <form action="/vendor/complete_issue/{{ issue.id }}" method="post">
+                            <button type="submit">Mark Completed</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No issues assigned yet.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

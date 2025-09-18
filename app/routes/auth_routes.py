@@ -26,27 +26,43 @@ def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
-
 @router.post("/login")
-def login_post(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+def login_post(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
     user = crud.get_user_by_username(db, username)
+
     if not user or not verify_password(password, user.password_hash):
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Invalid username or password."}
         )
 
-    # ✅ Skip OTP verification for tenants
-    if user.role != "tenant" and not user.is_verified:
+    # Skip OTP verification for tenants and vendors
+    if user.role not in ["tenant", "vendor"] and not user.is_verified:
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Account not verified. Please verify OTP."}
         )
 
+    # Set session
     request.session["user_id"] = user.id
     request.session["username"] = user.username
     request.session["role"] = user.role
-    return RedirectResponse(url="/dashboard", status_code=302)
+
+    # Redirect based on role
+    if user.role == "owner" or user.role == "manager":
+        return RedirectResponse(url="/dashboard", status_code=302)
+    elif user.role == "tenant":
+        return RedirectResponse(url="/tenant/dashboard", status_code=302)
+    elif user.role == "vendor":
+        return RedirectResponse(url="/vendor/dashboard", status_code=302)
+
+    # fallback
+    return RedirectResponse(url="/login", status_code=302)
 
 # --------------------------
 # REGISTRATION + OTP
@@ -55,18 +71,20 @@ def login_post(request: Request, username: str = Form(...), password: str = Form
 def register_get(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-
 @router.post("/register")
-def register_post(request: Request,
-                  username: str = Form(...),
-                  email: str = Form(...),
-                  password: str = Form(...),
-                  role: str = Form(...),
-                  db: Session = Depends(get_db)):
-
+def register_post(
+    request: Request,
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    role: str = Form(...),
+    db: Session = Depends(get_db)
+):
     try:
-        if role.lower() == "tenant":
-            # handle tenant registration separately if needed
+        role = role.lower()
+
+        if role == "tenant":
+            # Handle tenant registration via PendingTenant
             pending = db.query(PendingTenant).filter(
                 PendingTenant.email == email,
                 PendingTenant.is_activated == False
@@ -88,19 +106,29 @@ def register_post(request: Request,
                 floor_id=pending.floor_id
             )
 
-            # mark tenant as activated
+            # Mark tenant as activated
             pending.is_activated = True
             db.commit()
             return RedirectResponse(url="/login", status_code=302)
 
-        else:
-            # Owner/Manager → OTP flow handled inside create_user
+        elif role in ["owner", "manager"]:
+            # Owner / Manager → OTP verification flow
             create_user(db=db, username=username, email=email, password=password, role=role)
             return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
 
+        elif role == "vendor":
+            # Vendor self-registration (no OTP required)
+            create_user(db=db, username=username, email=email, password=password, role=role)
+            return RedirectResponse(url="/login", status_code=302)
+
+        else:
+            return templates.TemplateResponse("register.html", {
+                "request": request,
+                "error": "Invalid role selected."
+            })
+
     except Exception as e:
         return templates.TemplateResponse("register.html", {"request": request, "error": str(e)})
-
 
 @router.get("/verify_otp", response_class=HTMLResponse)
 def verify_otp_get(request: Request, email: str):
