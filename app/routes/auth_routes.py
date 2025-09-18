@@ -385,12 +385,16 @@ def owner_issues(request: Request, db: Session = Depends(get_db), user=Depends(g
         "owner_issues.html",
         {"request": request, "issues": issues, "user": user}
     )
-from app.models import User
-@router.get("/manager/issues")
-def manager_issues(request: Request, db: Session = Depends(get_db)):
-    # Get all users with role "vendor"
+
+
+@router.get("/manager/issues", response_class=HTMLResponse)
+def manager_issues(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != "manager":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
     vendors = db.query(User).filter(User.role == "vendor").all()
-    return templates.TemplateResponse("issues.html", {"request": request, "vendors": vendors})
+    return templates.TemplateResponse("issues.html", {"request": request, "vendors": vendors, "user": current_user})
+
 
 
 @router.get("/tenant/queries")

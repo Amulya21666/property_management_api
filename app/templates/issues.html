@@ -1,0 +1,30 @@
+<!-- app/templates/issues.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manager Issues</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>All Vendors</h2>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Vendor ID</th>
+                <th>Username</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor.id }}</td>
+                <td>{{ vendor.username }}</td>
+                <td>{{ vendor.email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
