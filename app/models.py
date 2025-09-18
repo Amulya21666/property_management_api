@@ -41,7 +41,7 @@ class User(Base):
     properties_owned = relationship("Property", back_populates="owner", foreign_keys="Property.owner_id")
     properties_managed = relationship("Property", back_populates="manager", foreign_keys="Property.manager_id")
     activity_logs = relationship("ActivityLog", back_populates="user_obj", cascade="all, delete-orphan")
-
+    service_type = Column(String(50), nullable=True)
     # Issues reported by tenant
     issues_reported = relationship("Issue", back_populates="tenant", cascade="all, delete-orphan")
 

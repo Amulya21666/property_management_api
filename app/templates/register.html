@@ -107,19 +107,47 @@ body {
         <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirm your password" required>
       </div>
 
-      <div class="mb-4">
-        <label for="role" class="form-label">Select Role</label>
-        <select id="role" name="role" class="form-select" required>
-          <option value="" disabled selected>Select Role</option>
-          <option value="owner">Owner</option>
-          <option value="manager">Manager</option>
-          <option value="tenant">Tenant</option>
-            <option value="vendor">Vendor</option>
-        </select>
-      </div>
+  <div class="mb-4">
+  <label for="role" class="form-label">Select Role</label>
+  <select id="role" name="role" class="form-select" required>
+    <option value="" disabled selected>Select Role</option>
+    <option value="owner">Owner</option>
+    <option value="manager">Manager</option>
+    <option value="tenant">Tenant</option>
+    <option value="vendor">Vendor</option>
+  </select>
+</div>
 
-      <button type="submit" class="btn-register">Register</button>
-    </form>
+<!-- Vendor-specific fields -->
+<div id="vendor_fields" style="display:none;" class="mb-4">
+  <label for="service_type" class="form-label">Service Type</label>
+  <select name="service_type" id="service_type" class="form-select">
+    <option value="Electrician">Electrician</option>
+    <option value="Plumber">Plumber</option>
+    <option value="Carpenter">Carpenter</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
+
+<button type="submit" class="btn-register">Register</button>
+
+{% if error %}
+  <div class="error">{{ error }}</div>
+{% endif %}
+
+<script>
+  const roleSelect = document.getElementById('role');
+  const vendorFields = document.getElementById('vendor_fields');
+
+  roleSelect.addEventListener('change', () => {
+    if(roleSelect.value === 'vendor') {
+      vendorFields.style.display = 'block';
+    } else {
+      vendorFields.style.display = 'none';
+    }
+  });
+</script>
+
 
     {% if error %}
       <div class="error">{{ error }}</div>

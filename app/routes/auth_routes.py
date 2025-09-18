@@ -119,8 +119,8 @@ def register_post(
             return RedirectResponse(url=f"/verify_otp?email={email}", status_code=302)
 
         elif role == "vendor":
-            # Vendor self-registration (no OTP required)
-            create_user(db=db, username=username, email=email, password=password, role=role)
+            service_type = request.form.get("service_type")  # from HTML form
+            create_user(db=db, username=username, email=email, password=password, role=role, service_type=service_type)
             return RedirectResponse(url="/login", status_code=302)
 
         else:
@@ -386,13 +386,11 @@ def owner_issues(request: Request, db: Session = Depends(get_db), user=Depends(g
         {"request": request, "issues": issues, "user": user}
     )
 from app.models import User
-
 @router.get("/manager/issues")
 def manager_issues(request: Request, db: Session = Depends(get_db)):
     # Get all users with role "vendor"
     vendors = db.query(User).filter(User.role == "vendor").all()
     return templates.TemplateResponse("manager/issues.html", {"request": request, "vendors": vendors})
-
 
 
 @router.get("/tenant/queries")
