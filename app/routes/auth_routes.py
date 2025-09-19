@@ -422,7 +422,7 @@ def tenant_queries_list(request: Request, db: Session = Depends(get_db), user=De
 @router.post("/manager/assign_vendor/{issue_id}")
 def assign_vendor(
     issue_id: int,
-    vendor_id: int = Form(...),
+    vendor_id: int = Form(...),   # comes from "Select Vendor" dropdown
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -435,20 +435,22 @@ def assign_vendor(
         raise HTTPException(status_code=404, detail="Issue not found")
 
     # Fetch vendor as a User with role 'vendor'
-    vendor = db.query(User).filter(User.id == vendor_id, User.role == "vendor").first()
+    vendor = db.query(User).filter(
+        User.id == vendor_id, User.role == "vendor"
+    ).first()
     if not vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
 
-    # Assign issue to vendor
-    issue.assigned_to = vendor.id
+    # ✅ Assign issue to vendor (use vendor_id, not assigned_to)
+    issue.vendor_id = vendor.id
     issue.assigned_at = datetime.utcnow()
     issue.status = IssueStatus.assigned
+
     db.commit()
     db.refresh(issue)
 
-    # ✅ No email or link needed now
-
     return RedirectResponse(url="/manager/issues", status_code=303)
+
 
 
 @router.post("/manager/approve_bill/{issue_id}")
