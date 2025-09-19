@@ -11,19 +11,11 @@ from app.utils import get_current_user
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
-# -------------------------------
-# Vendor Dashboard
-# -------------------------------
 @router.get("/vendor/dashboard", response_class=HTMLResponse)
-def vendor_dashboard(
-    request: Request,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
+def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # ✅ Correct: filter using vendor_id
     assigned_issues = (
         db.query(Issue)
         .options(
@@ -42,16 +34,10 @@ def vendor_dashboard(
 
 
 
-# -------------------------------
-# Vendor Issues Page
-# -------------------------------
+
 @router.get("/vendor/issues", response_class=HTMLResponse)
-def vendor_issues(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    if current_user.role != "vendor":
+def vendor_issues(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
     assigned_issues = (
@@ -67,12 +53,9 @@ def vendor_issues(
 
     return templates.TemplateResponse(
         "vendor_issues.html",
-        {
-            "request": request,
-            "assigned_issues": assigned_issues,
-            "user": current_user,
-        }
+        {"request": request, "assigned_issues": assigned_issues, "user": user}
     )
+
 
 
 # -------------------------------
