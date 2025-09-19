@@ -395,13 +395,22 @@ def owner_issues(request: Request, db: Session = Depends(get_db), user=Depends(g
     )
 
 
+
 @router.get("/manager/issues", response_class=HTMLResponse)
 def manager_issues(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.role != "manager":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Fetch all pending/assigned issues
-    issues = db.query(Issue).all()  # You can filter by status if needed: .filter(Issue.status != 'paid')
+    # ✅ Load property, tenant, appliance along with each issue
+    issues = (
+        db.query(Issue)
+        .options(
+            joinedload(Issue.property),
+            joinedload(Issue.appliance),
+            joinedload(Issue.tenant)
+        )
+        .all()
+    )
 
     # Fetch all vendors
     vendors = db.query(User).filter(User.role == "vendor").all()
@@ -410,6 +419,7 @@ def manager_issues(request: Request, db: Session = Depends(get_db), current_user
         "issues.html",
         {"request": request, "issues": issues, "vendors": vendors, "user": current_user}
     )
+
 
 
 @router.get("/tenant/queries")
