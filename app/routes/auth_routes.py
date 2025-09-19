@@ -417,8 +417,6 @@ def tenant_queries_list(request: Request, db: Session = Depends(get_db), user=De
     from app.models import TenantQuery  # ✅ Import locally to avoid circular import
     queries = db.query(TenantQuery).filter(TenantQuery.reported_by_id == user.id).all()
     return {"queries": queries}
-
-
 @router.post("/manager/assign_vendor/{issue_id}")
 def assign_vendor(
     issue_id: int,
@@ -439,16 +437,15 @@ def assign_vendor(
     if not vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
 
-    # Assign issue to vendor
-    issue.assigned_to = vendor.id
+    # ✅ Assign to vendor_id (not assigned_to)
+    issue.vendor_id = vendor.id
     issue.assigned_at = datetime.utcnow()
     issue.status = IssueStatus.assigned
     db.commit()
     db.refresh(issue)
 
-    # ✅ No email or link needed now
-
     return RedirectResponse(url="/manager/issues", status_code=303)
+
 
 
 @router.post("/manager/approve_bill/{issue_id}")
