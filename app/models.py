@@ -182,6 +182,7 @@ class Issue(Base):
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
+    appliance_name = Column(String(100), nullable=True) 
     completed_at = Column(DateTime, nullable=True)
     bill_amount = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
