@@ -40,6 +40,7 @@ class User(Base):
     username = Column(String(255), unique=True, index=True, nullable=False)
     name = Column(String, nullable=True)
     phone = Column(String, nullable=True)
+    service_type = Column(String, nullable=True)
 
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=True)
