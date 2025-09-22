@@ -53,15 +53,7 @@
                 <td>{{ issue.id or 'N/A' }}</td>
                 <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
                 <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
-                <td>
-                    {% if issue.appliance %}
-                        {{ issue.appliance.name }}
-                    {% elif issue.appliance_name %}
-                        {{ issue.appliance_name }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
+                <td>{{ issue.appliance.name if issue.appliance else (issue.appliance_name or 'N/A') }}</td>
                 <td>{{ issue.description or 'N/A' }}</td>
                 <td class="status-{{ issue.status.value }}">
                     {{ issue.status.value or 'N/A' }}
