@@ -45,7 +45,15 @@
                 <td>{{ issue.id or 'N/A' }}</td>
                 <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
                 <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
-                <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
+                <td>
+                  {% if issue.appliance %}
+                      {{ issue.appliance.name }}
+                  {% elif issue.appliance_name %}
+                      {{ issue.appliance_name }}
+                  {% else %}
+                      N/A
+                  {% endif %}
+                </td>
                 <td>{{ issue.description or 'N/A' }}</td>
                 <td>{{ issue.status.value or 'N/A' }}</td>
                 <td>{{ issue.created_at.strftime("%Y-%m-%d %H:%M") if issue.created_at else 'N/A' }}</td>
