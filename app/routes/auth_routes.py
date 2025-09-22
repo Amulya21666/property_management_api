@@ -396,13 +396,12 @@ def owner_issues(request: Request, db: Session = Depends(get_db), user=Depends(g
     )
 
 
-
 @router.get("/manager/issues", response_class=HTMLResponse)
 def manager_issues(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.role != "manager":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # ✅ Load property, tenant, appliance along with each issue
+    # Load related property, tenant, appliance
     issues = (
         db.query(Issue)
         .options(
