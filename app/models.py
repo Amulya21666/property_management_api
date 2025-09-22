@@ -16,7 +16,7 @@ class IssueStatus(str, PyEnum):
     assigned = "assigned"
     repaired = "repaired"
     in_progress = "in_progress"
-     rejected = "rejected"
+    rejected = "rejected"
     paid = "paid"
 
 
