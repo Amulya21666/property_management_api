@@ -1,4 +1,3 @@
-<!-- app/templates/issues.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +13,6 @@
                 <th>Issue ID</th>
                 <th>Tenant</th>
                 <th>Home / Property</th>
-    
                 <th>Appliance</th>
                 <th>Description</th>
                 <th>Status</th>
@@ -28,13 +26,6 @@
                 <td>{{ issue.id }}</td>
                 <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
                 <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
-                <td>
-                    {% if issue.tenant %}
-                        {{ issue.tenant.flat_no or '' }} {{ issue.tenant.room_no or '' }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
                 <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
                 <td>{{ issue.description }}</td>
                 <td>{{ issue.status.value }}</td>
@@ -52,6 +43,10 @@
                         <button type="submit">Assign</button>
                     </form>
                 </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8">No issues reported yet.</td>
             </tr>
             {% endfor %}
         </tbody>
