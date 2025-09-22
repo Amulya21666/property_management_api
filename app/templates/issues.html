@@ -22,18 +22,9 @@
             padding: 4px 8px;
             margin-top: 2px;
         }
-        .status-assigned {
-            color: green;
-            font-weight: bold;
-        }
-        .status-pending {
-            color: orange;
-            font-weight: bold;
-        }
-        .status-completed {
-            color: blue;
-            font-weight: bold;
-        }
+        .status-assigned { color: green; font-weight: bold; }
+        .status-pending { color: orange; font-weight: bold; }
+        .status-completed { color: blue; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -57,7 +48,7 @@
                 <td>{{ issue.id or 'N/A' }}</td>
                 <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
                 <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
-                <td>{{ issue.appliance.name if issue.appliance else (issue.appliance_name or 'N/A') }}</td>
+                <td>{{ issue.appliance_name or 'N/A' }}</td>
                 <td>{{ issue.description or 'N/A' }}</td>
                 <td class="status-{{ issue.status }}">
                     {{ issue.status or 'N/A' }}
