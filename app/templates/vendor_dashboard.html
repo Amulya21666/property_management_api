@@ -3,10 +3,13 @@
     <thead>
         <tr>
             <th>Issue ID</th>
+            <th>Tenant</th>
             <th>Property</th>
+            <th>Flat / Room</th>
             <th>Appliance</th>
             <th>Description</th>
             <th>Status</th>
+            <th>Raised On</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -14,18 +17,42 @@
         {% for issue in assigned_issues %}
         <tr>
             <td>{{ issue.id }}</td>
+            <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
             <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
+            <td>
+                {% if issue.tenant %}
+                    {{ issue.tenant.flat_no or '' }} {{ issue.tenant.room_no or '' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
             <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
             <td>{{ issue.description }}</td>
             <td>{{ issue.status.value }}</td>
+            <td>{{ issue.created_at.strftime("%Y-%m-%d %H:%M") if issue.created_at else 'N/A' }}</td>
             <td>
-                <form method="post" action="/vendor/accept_issue/{{ issue.id }}" style="display:inline">
-                    <button class="btn btn-success btn-sm">Accept</button>
-                </form>
-                <form method="post" action="/vendor/reject_issue/{{ issue.id }}" style="display:inline">
-                    <button class="btn btn-danger btn-sm">Reject</button>
-                </form>
+                {% if issue.status.value == "assigned" %}
+                    <form method="post" action="/vendor/accept_issue/{{ issue.id }}" style="display:inline">
+                        <button class="btn btn-success btn-sm">Accept</button>
+                    </form>
+                    <form method="post" action="/vendor/reject_issue/{{ issue.id }}" style="display:inline">
+                        <button class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                {% elif issue.status.value == "in_progress" %}
+                    <form method="post" action="/vendor/mark_repaired/{{ issue.id }}">
+                        <input type="number" name="bill_amount" step="0.01" placeholder="Bill Amount" required>
+                        <button class="btn btn-primary btn-sm">Mark as Repaired</button>
+                    </form>
+                {% elif issue.status.value == "repaired" %}
+                    ✅ Awaiting Manager Approval
+                {% elif issue.status.value == "paid" %}
+                    💰 Paid
+                {% endif %}
             </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="9">No issues assigned to you.</td>
         </tr>
         {% endfor %}
     </tbody>
