@@ -15,7 +15,9 @@ class IssueStatus(str, PyEnum):
     pending = "pending"
     assigned = "assigned"
     repaired = "repaired"
+    in_progress = "in_progress" 
     paid = "paid"
+
 
 class WorkerType(str, PyEnum):
     electrician = "Electrician"
