@@ -179,7 +179,6 @@ class Issue(Base):
     id = Column(Integer, primary_key=True, index=True)
     description = Column(Text, nullable=False)
     status = Column(Enum(IssueStatus), default=IssueStatus.pending, nullable=False)
-    cost = Column(Float, nullable=True)
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     appliance_id = Column(Integer, ForeignKey("appliances.id"), nullable=True)
