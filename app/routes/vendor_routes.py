@@ -84,52 +84,29 @@ def mark_issue_repaired(
 
     return RedirectResponse(url="/vendor/issues", status_code=303)
 
-
-# -------------------------------
-# Vendor accepts issue
-# -------------------------------
 @router.post("/vendor/accept_issue/{issue_id}")
-def accept_issue(
-    issue_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
-    if user.role != "vendor":
+def accept_issue(issue_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    issue = db.query(Issue).filter(
-        Issue.id == issue_id, Issue.vendor_id == user.id
-    ).first()
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.vendor_id == current_user.id).first()
     if not issue:
-        raise HTTPException(status_code=404, detail="Issue not found")
+        raise HTTPException(status_code=404, detail="Issue not found or not assigned to you")
 
-    # Better: move to "in_progress" instead of re-setting to "assigned"
-    issue.status = IssueStatus.in_progress
+    issue.status = IssueStatus.in_progress   # ✅ now valid
     db.commit()
+    return RedirectResponse(url="/vendor/dashboard", status_code=303)
 
-    return RedirectResponse("/vendor/dashboard", status_code=303)
-
-
-# -------------------------------
-# Vendor rejects issue
-# -------------------------------
 @router.post("/vendor/reject_issue/{issue_id}")
-def reject_issue(
-    issue_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
-    if user.role != "vendor":
+def reject_issue(issue_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    issue = db.query(Issue).filter(
-        Issue.id == issue_id, Issue.vendor_id == user.id
-    ).first()
+    issue = db.query(Issue).filter(Issue.id == issue_id, Issue.vendor_id == current_user.id).first()
     if not issue:
-        raise HTTPException(status_code=404, detail="Issue not found")
+        raise HTTPException(status_code=404, detail="Issue not found or not assigned to you")
 
-    issue.status = IssueStatus.pending   # back to pending
-    issue.vendor_id = None               # unassign vendor
+    issue.status = IssueStatus.rejected   # ✅ set status to rejected
     db.commit()
+    return RedirectResponse(url="/vendor/dashboard", status_code=303)
 
-    return RedirectResponse("/vendor/dashboard", status_code=303)
