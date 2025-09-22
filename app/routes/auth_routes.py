@@ -355,7 +355,6 @@ def tenant_dashboard(request: Request, db: Session = Depends(get_db), user=Depen
         "property": property,
         "appliances": appliances
     })
-
 @router.post("/tenant/report_issue/{appliance_id}")
 def report_issue(appliance_id: int, description: str = Form(...), db: Session = Depends(get_db), user=Depends(get_current_user)):
     appliance = db.query(Appliance).filter(Appliance.id == appliance_id).first()
@@ -364,7 +363,7 @@ def report_issue(appliance_id: int, description: str = Form(...), db: Session = 
 
     issue = Issue(
         description=description,
-        tenant_id=user.id,          # <-- use tenant_id, not reported_by
+        tenant_id=user.id,
         property_id=appliance.property_id,
         appliance_id=appliance.id,
         status=IssueStatus.pending
@@ -374,7 +373,6 @@ def report_issue(appliance_id: int, description: str = Form(...), db: Session = 
     db.refresh(issue)
 
     return {"message": "Issue reported successfully", "issue_id": issue.id}
-
 
 
 from fastapi import Request
