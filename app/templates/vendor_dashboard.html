@@ -1,59 +1,79 @@
-<h2>Assigned Issues</h2>
-<table border="1" cellpadding="5">
-    <thead>
-        <tr>
-            <th>Issue ID</th>
-            <th>Tenant</th>
-            <th>Property</th>
-            <th>Flat / Room</th>
-            <th>Appliance</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>Raised On</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for issue in assigned_issues %}
-        <tr>
-            <td>{{ issue.id }}</td>
-            <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
-            <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
-            <td>
-                {% if issue.tenant %}
-                    {{ issue.tenant.flat_no or '' }} {{ issue.tenant.room_no or '' }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-            <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
-            <td>{{ issue.description }}</td>
-            <td>{{ issue.status.value }}</td>
-            <td>{{ issue.created_at.strftime("%Y-%m-%d %H:%M") if issue.created_at else 'N/A' }}</td>
-            <td>
-                {% if issue.status.value == "assigned" %}
-                    <form method="post" action="/vendor/accept_issue/{{ issue.id }}" style="display:inline">
-                        <button class="btn btn-success btn-sm">Accept</button>
-                    </form>
-                    <form method="post" action="/vendor/reject_issue/{{ issue.id }}" style="display:inline">
-                        <button class="btn btn-danger btn-sm">Reject</button>
-                    </form>
-                {% elif issue.status.value == "in_progress" %}
-                    <form method="post" action="/vendor/mark_repaired/{{ issue.id }}">
-                        <input type="number" name="bill_amount" step="0.01" placeholder="Bill Amount" required>
-                        <button class="btn btn-primary btn-sm">Mark as Repaired</button>
-                    </form>
-                {% elif issue.status.value == "repaired" %}
-                    ✅ Awaiting Manager Approval
-                {% elif issue.status.value == "paid" %}
-                    💰 Paid
-                {% endif %}
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="9">No issues assigned to you.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!-- app/templates/vendor_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vendor Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+
+    <h2 class="mb-3">Assigned Issues</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Issue ID</th>
+                <th>Tenant</th>
+                <th>Property</th>
+                <th>Flat / Room</th>
+                <th>Appliance</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Raised On</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in assigned_issues %}
+            <tr>
+                <td>{{ issue.id }}</td>
+                <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
+                <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
+                <td>
+                    {% if issue.tenant %}
+                        {{ issue.tenant.flat_no or '' }} {{ issue.tenant.room_no or '' }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>{{ issue.appliance.name if issue.appliance else 'N/A' }}</td>
+                <td>{{ issue.description }}</td>
+                <td>{{ issue.status.value }}</td>
+                <td>{{ issue.created_at.strftime("%Y-%m-%d %H:%M") if issue.created_at else 'N/A' }}</td>
+                <td>
+                    {% if issue.status.value == "assigned" %}
+                        <form method="post" action="/vendor/accept_issue/{{ issue.id }}" style="display:inline;">
+                            <button class="btn btn-success btn-sm" type="submit">Accept</button>
+                        </form>
+                        <form method="post" action="/vendor/reject_issue/{{ issue.id }}" style="display:inline;">
+                            <button class="btn btn-danger btn-sm" type="submit">Reject</button>
+                        </form>
+                    {% elif issue.status.value == "in_progress" %}
+                        <form method="post" action="/vendor/mark_repaired/{{ issue.id }}" style="display:inline;">
+                            <input type="number" name="bill_amount" step="0.01" placeholder="Bill Amount" class="form-control form-control-sm d-inline-block" style="width: 120px;" required>
+                            <button class="btn btn-primary btn-sm" type="submit">Mark as Repaired</button>
+                        </form>
+                    {% elif issue.status.value == "repaired" %}
+                        ✅ Awaiting Manager Approval
+                    {% elif issue.status.value == "paid" %}
+                        💰 Paid
+                    {% elif issue.status.value == "rejected" %}
+                        ❌ Rejected
+                    {% else %}
+                        {{ issue.status.value }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="text-center">No issues assigned to you.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
