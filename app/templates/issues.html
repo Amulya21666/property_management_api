@@ -13,7 +13,7 @@
             border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
-            min-width: 100px; /* keeps columns aligned */
+            min-width: 100px;
         }
         th {
             background-color: #f2f2f2;
@@ -21,6 +21,14 @@
         select, button {
             padding: 4px 8px;
             margin-top: 2px;
+        }
+        .status-assigned {
+            color: green;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: orange;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -31,12 +39,12 @@
             <tr>
                 <th>Issue ID</th>
                 <th>Tenant</th>
-                <th>Home / Property</th>
+                <th>Property</th>
                 <th>Appliance</th>
                 <th>Description</th>
                 <th>Status</th>
                 <th>Raised On</th>
-                <th>Assign Vendor</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -46,56 +54,45 @@
                 <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
                 <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
                 <td>
-                  {% if issue.appliance %}
-                      {{ issue.appliance.name }}
-                  {% elif issue.appliance_name %}
-                      {{ issue.appliance_name }}
-                  {% else %}
-                      N/A
-                  {% endif %}
+                    {% if issue.appliance %}
+                        {{ issue.appliance.name }}
+                    {% elif issue.appliance_name %}
+                        {{ issue.appliance_name }}
+                    {% else %}
+                        N/A
+                    {% endif %}
                 </td>
                 <td>{{ issue.description or 'N/A' }}</td>
-                <td>{{ issue.status.value or 'N/A' }}</td>
+                <td class="status-{{ issue.status.value }}">
+                    {{ issue.status.value or 'N/A' }}
+                </td>
                 <td>{{ issue.created_at.strftime("%Y-%m-%d %H:%M") if issue.created_at else 'N/A' }}</td>
                 <td>
-                    <form method="post" action="/manager/assign_vendor/{{ issue.id }}">
-                        <select name="vendor_id" required>
-                            <option value="">Select Vendor</option>
-                            {% for vendor in vendors %}
-                                <option value="{{ vendor.id }}">
-                                    {{ vendor.username }} {% if vendor.service_type %}({{ vendor.service_type }}){% else %}(N/A){% endif %}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit">Assign</button>
-                    </form>
+                    {% if issue.status.value == 'pending' %}
+                        <form method="post" action="/manager/assign_vendor/{{ issue.id }}">
+                            <select name="vendor_id" required>
+                                <option value="">Select Vendor</option>
+                                {% for vendor in vendors %}
+                                    <option value="{{ vendor.id }}">
+                                        {{ vendor.username }}{% if vendor.service_type %} ({{ vendor.service_type }}){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit">Assign</button>
+                        </form>
+                    {% else %}
+                        {% if issue.vendor %}
+                            Assigned to: {{ issue.vendor.username }}
+                        {% endif %}
+                        {% if issue.bill_amount %}
+                            <br>Bill: ₹{{ issue.bill_amount }}
+                        {% endif %}
+                    {% endif %}
                 </td>
             </tr>
             {% else %}
             <tr>
                 <td colspan="8">No issues reported yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <h3>All Vendors</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Vendor ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Service Type</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for vendor in vendors %}
-            <tr>
-                <td>{{ vendor.id or 'N/A' }}</td>
-                <td>{{ vendor.username or 'N/A' }}</td>
-                <td>{{ vendor.email or 'N/A' }}</td>
-                <td>{{ vendor.service_type or 'N/A' }}</td>
             </tr>
             {% endfor %}
         </tbody>
