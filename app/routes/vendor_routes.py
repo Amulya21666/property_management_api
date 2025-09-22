@@ -10,12 +10,12 @@ from app.utils import get_current_user
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
-
 @router.get("/vendor/dashboard", response_class=HTMLResponse)
 def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if user.role != "vendor":
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # ✅ Only issues assigned to this vendor
     assigned_issues = (
         db.query(Issue)
         .options(
@@ -23,7 +23,7 @@ def vendor_dashboard(request: Request, db: Session = Depends(get_db), user: User
             joinedload(Issue.appliance),
             joinedload(Issue.tenant)
         )
-        .filter(Issue.vendor_id == user.id, Issue.status == IssueStatus.assigned)
+        .filter(Issue.vendor_id == user.id)
         .all()
     )
 
