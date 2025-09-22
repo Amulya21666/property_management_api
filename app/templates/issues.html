@@ -24,7 +24,10 @@
         }
         .status-assigned { color: green; font-weight: bold; }
         .status-pending { color: orange; font-weight: bold; }
-        .status-completed { color: blue; font-weight: bold; }
+        .status-repaired { color: blue; font-weight: bold; }
+        .status-in_progress { color: purple; font-weight: bold; }
+        .status-rejected { color: red; font-weight: bold; }
+        .status-paid { color: teal; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -48,14 +51,14 @@
                 <td>{{ issue.id or 'N/A' }}</td>
                 <td>{{ issue.tenant.username if issue.tenant else 'N/A' }}</td>
                 <td>{{ issue.property.name if issue.property else 'N/A' }}</td>
-                <td>{{ issue.appliance_name or 'N/A' }}</td>
+                <td>{{ issue.appliance_name or (issue.appliance.name if issue.appliance else 'N/A') }}</td>
                 <td>{{ issue.description or 'N/A' }}</td>
-                <td class="status-{{ issue.status }}">
-                    {{ issue.status or 'N/A' }}
+                <td class="status-{{ issue.status.value }}">
+                    {{ issue.status.value or 'N/A' }}
                 </td>
                 <td>{{ issue.created_at.strftime("%Y-%m-%d %H:%M") if issue.created_at else 'N/A' }}</td>
                 <td>
-                    {% if issue.status == 'pending' %}
+                    {% if issue.status.value == 'pending' %}
                         <form method="post" action="/manager/assign_vendor/{{ issue.id }}">
                             <select name="vendor_id" required>
                                 <option value="">Select Vendor</option>
