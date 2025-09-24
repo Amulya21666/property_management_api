@@ -169,40 +169,6 @@
     </a>
   </div>
 
-  <!-- Pending Tenant Invites -->
-  <div class="row mt-4">
-    <div class="col-md-12">
-      <div class="tech-card">
-        <h5>Pending Tenant Invites</h5>
-        {% if pending_tenants %}
-          <table class="table table-striped tenant-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Property</th>
-                <th>Status</th>
-                <th>Invited At</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for tenant in pending_tenants %}
-                <tr>
-                  <td>{{ tenant.name }}</td>
-                  <td>{{ tenant.email }}</td>
-                  <td>{{ tenant.property.name }}</td>
-                  <td>{{ 'Activated' if tenant.is_activated else 'Pending' }}</td>
-                  <td>{{ tenant.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        {% else %}
-          <p>No pending tenant invites.</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
 
   <!-- Technical Insights -->
   <div class="tech-section">
