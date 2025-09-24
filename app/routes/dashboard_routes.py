@@ -92,7 +92,7 @@ async def add_appliance(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
 
-    uploads_dir = "app/static/uploads"
+    uploads_dir = "app/static/images"
     os.makedirs(uploads_dir, exist_ok=True)
 
     def save_file(upload_file: UploadFile, suffix: str):
