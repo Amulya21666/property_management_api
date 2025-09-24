@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Appliance</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #f9f9f9, #e9ecef);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 30px;
+    }
+    .form-container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; margin-bottom: 30px; color: #28a745; }
+    .btn-primary { width: 100%; }
+    .form-label { font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <h2>Add New Appliance</h2>
+  <form action="/add_appliance" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="name" class="form-label">Appliance Name</label>
+      <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Refrigerator" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="model" class="form-label">Model</label>
+      <input type="text" class="form-control" id="model" name="model" placeholder="e.g., RF28R7351SR" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="color" class="form-label">Color</label>
+      <input type="text" class="form-control" id="color" name="color" placeholder="e.g., Silver" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="status" class="form-label">Status</label>
+      <select class="form-select" id="status" name="status" required>
+        <option value="Working">Working</option>
+        <option value="Not Working">Not Working</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="warranty_expiry" class="form-label">Warranty Expiry</label>
+      <input type="date" class="form-control" id="warranty_expiry" name="warranty_expiry" value="{{ current_date }}" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="front_image" class="form-label">Front Image</label>
+      <input type="file" class="form-control" id="front_image" name="front_image" accept="image/*">
+    </div>
+
+    <div class="mb-3">
+      <label for="detail_image" class="form-label">Detail Image</label>
+      <input type="file" class="form-control" id="detail_image" name="detail_image" accept="image/*">
+    </div>
+
+    <div class="mb-3 text-center">
+      <button type="submit" class="btn btn-primary btn-lg">Add Appliance</button>
+    </div>
+
+    <div class="text-center">
+      <a href="/view_properties" class="btn btn-secondary">⬅ Back to Properties</a>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
