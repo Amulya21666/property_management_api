@@ -173,9 +173,9 @@
                     <div class="d-flex align-items-center">
                       <!-- ✅ Show only front image if exists -->
                       <img src="{% if appliance.front_image %}
-                                   {{ url_for('static', path='uploads/' ~ appliance.front_image) }}
+                                   {{ url_for('static', path='images/' ~ appliance.front_image) }}
                                  {% else %}
-                                   {{ url_for('static', path='uploads/default_appliance.jpg') }}
+                                   {{ url_for('static', path='images/default_appliance.jpg') }}
                                  {% endif %}"
                            alt="{{ appliance.name }} Front"
                            class="appliance-thumbnail">
