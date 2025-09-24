@@ -208,53 +208,7 @@ body {
       <p class="text-muted">No properties assigned yet.</p>
     {% endif %}
 
-    <!-- Reported Issues Section -->
-<h4 class="section-title"><i class="bi bi-exclamation-circle"></i> Reported Issues</h4>
 
-{% if issues %}
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
-      <thead class="table-danger">
-        <tr>
-          <th>ID</th>
-          <th>Description</th>
-          <th>Tenant</th>
-          <th>Property</th>
-          <th>Status</th>
-          <th>Vendor</th>
-          <th>Cost</th>
-          <th>Bill</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for issue in issues %}
-          <tr>
-            <td>{{ issue.id }}</td>
-            <td>{{ issue.description }}</td>
-            <td>{{ issue.tenant.username }}</td>
-            <td>{{ issue.property.name }}</td>
-            <td>
-              {% if issue.status == "pending" %}
-                <span class="badge bg-warning text-dark">Pending</span>
-              {% elif issue.status == "assigned" %}
-                <span class="badge bg-info">Assigned</span>
-              {% elif issue.status == "completed" %}
-                <span class="badge bg-primary">Completed</span>
-              {% elif issue.status == "verified" %}
-                <span class="badge bg-success">Verified</span>
-              {% endif %}
-            </td>
-            <td>{{ issue.vendor.name if issue.vendor else "Not Assigned" }}</td>
-            <td>₹{{ issue.cost if issue.cost else "N/A" }}</td>
-            <td>
-              {% if issue.bill_url %}
-                <a href="{{ url_for('static', path=issue.bill_url) }}" target="_blank" class="btn btn-sm btn-secondary">View Bill</a>
-              {% else %}
-                N/A
-              {% endif %}
-            </td>
-            <td>
               <!-- Assign Vendor (only if pending) -->
               {% if issue.status == "pending" %}
               <form method="post" action="/issues/{{ issue.id }}/assign" class="d-flex gap-2">
