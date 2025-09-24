@@ -23,6 +23,7 @@
       display: flex;
       gap: 20px;
       justify-content: center;
+      flex-wrap: wrap;
     }
     .images img {
       max-width: 100%;
@@ -49,54 +50,49 @@
 
       <div class="images">
 
-<!-- Front Image -->
-<div>
-  <h6 class="text-center">Front Image</h6>
-  <a href="{% if front_image %}
-              {{ url_for('static', path='uploads/' + front_image.replace('uploads/', '')) }}
-           {% elif appliance.name|lower == 'refrigerator' %}
-              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
-           {% else %}
-              {{ url_for('static', path='uploads/default_appliance.jpg') }}
-           {% endif %}"
-     target="_blank">
-    <img
-      src="{% if front_image %}
-              {{ url_for('static', path='uploads/' + front_image.replace('uploads/', '')) }}
-           {% elif appliance.name|lower == 'refrigerator' %}
-              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
-           {% else %}
-              {{ url_for('static', path='uploads/default_appliance.jpg') }}
-           {% endif %}"
-      alt="Front image of {{ appliance.name }}"
-      class="img-fluid rounded">
-  </a>
-</div>
+        <!-- Front Image -->
+        <div>
+          <h6 class="text-center">Front Image</h6>
+          <a href="{% if front_image %}
+                      {{ url_for('static', path='images/' + front_image) }}
+                   {% elif appliance.name|lower == 'refrigerator' %}
+                      {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
+                   {% else %}
+                      {{ url_for('static', path='images/default_appliance.jpg') }}
+                   {% endif %}" target="_blank">
+            <img src="{% if front_image %}
+                        {{ url_for('static', path='images/' + front_image) }}
+                     {% elif appliance.name|lower == 'refrigerator' %}
+                        {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
+                     {% else %}
+                        {{ url_for('static', path='images/default_appliance.jpg') }}
+                     {% endif %}"
+                 alt="Front image of {{ appliance.name }}"
+                 class="img-fluid rounded">
+          </a>
+        </div>
 
-<!-- Detail Image -->
-<div>
-  <h6 class="text-center">Detail Image</h6>
-  <a href="{% if detail_image %}
-              {{ url_for('static', path='uploads/' + detail_image.replace('uploads/', '')) }}
-           {% elif appliance.name|lower == 'refrigerator' %}
-              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
-           {% else %}
-              {{ url_for('static', path='uploads/default_appliance.jpg') }}
-           {% endif %}"
-     target="_blank">
-    <img
-      src="{% if detail_image %}
-              {{ url_for('static', path='uploads/' + detail_image.replace('uploads/', '')) }}
-           {% elif appliance.name|lower == 'refrigerator' %}
-              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
-           {% else %}
-              {{ url_for('static', path='uploads/default_appliance.jpg') }}
-           {% endif %}"
-      alt="Detail image of {{ appliance.name }}"
-      class="img-fluid rounded">
-  </a>
-</div>
-
+        <!-- Detail Image -->
+        <div>
+          <h6 class="text-center">Detail Image</h6>
+          <a href="{% if detail_image %}
+                      {{ url_for('static', path='images/' + detail_image) }}
+                   {% elif appliance.name|lower == 'refrigerator' %}
+                      {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
+                   {% else %}
+                      {{ url_for('static', path='images/default_appliance.jpg') }}
+                   {% endif %}" target="_blank">
+            <img src="{% if detail_image %}
+                        {{ url_for('static', path='images/' + detail_image) }}
+                     {% elif appliance.name|lower == 'refrigerator' %}
+                        {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
+                     {% else %}
+                        {{ url_for('static', path='images/default_appliance.jpg') }}
+                     {% endif %}"
+                 alt="Detail image of {{ appliance.name }}"
+                 class="img-fluid rounded">
+          </a>
+        </div>
 
       </div>
 
