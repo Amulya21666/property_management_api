@@ -167,14 +167,14 @@
                  alt="{{ appliance.name }}" class="appliance-img">
 
             <div class="appliance-info">
-              <div>
-                <p>📺 <strong>{{ appliance.name }}</strong></p>
-                <p>🆔 Model: {{ appliance.model }}</p>
-                <p>🎨 Color: {{ appliance.color }}</p>
-                <p>⚙️ Status: {{ appliance.status }}</p>
-                <p>📆 Warranty: {% if appliance.warranty_expiry %}{{ appliance.warranty_expiry.strftime('%b %d, %Y') }}{% else %}N/A{% endif %}</p>
-                <p>📍 Location: {% if appliance.location %}{{ appliance.location }
-              </div>
+                  <div>
+    <p>📺 <strong>{{ appliance.name }}</strong></p>
+    <p>🆔 Model: {{ appliance.model }}</p>
+    <p>🎨 Color: {{ appliance.color }}</p>
+    <p>⚙️ Status: {{ appliance.status }}</p>
+    <p>📆 Warranty: {% if appliance.warranty_expiry %}{{ appliance.warranty_expiry.strftime('%b %d, %Y') }}{% else %}N/A{% endif %}</p>
+    <p>📍 Location: {% if appliance.location %}{{ appliance.location }}{% else %}N/A{% endif %}</p>
+  </div>
               <div class="appliance-buttons">
                 <a href="/appliance/{{ appliance.id }}" class="btn-glass">View Details</a>
                 <a href="/edit_appliance/{{ appliance.id }}" class="btn-glass">✏️ Edit</a>
