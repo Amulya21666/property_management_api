@@ -1,228 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>View Properties</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(to right, #d0f0c0, #a0e3a0);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 40px 15px;
-      margin: 0;
-    }
+<meta charset="UTF-8">
+<title>Your Properties</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body {
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 30px;
+  }
 
-    .container {
-      max-width: 1100px;
-      margin: auto;
-    }
+  h2.page-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 50px;
+    color: #00796b;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  }
 
-    h2.page-title {
-      text-align: center;
-      font-size: 36px;
-      font-weight: bold;
-      margin-bottom: 50px;
-      color: #2c3e50;
-      letter-spacing: 1px;
-    }
+  .property-card {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    padding: 25px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
 
-    .property-card {
-      background-color: #ffffff;
-      border-radius: 20px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-      padding: 30px;
-      margin-bottom: 40px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+  .property-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  }
 
-    .property-card:hover {
-      transform: translateY(-7px);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
-    }
+  .property-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #004d40;
+  }
 
-    .property-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
+  .property-address {
+    font-size: 1rem;
+    color: #00695c;
+    margin-bottom: 20px;
+  }
 
-    .property-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: #2d2d2d;
-    }
+  .floor-section {
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.03);
+  }
 
-    .property-address {
-      font-size: 15px;
-      color: #6c757d;
-      margin-bottom: 20px;
-    }
+  .floor-title {
+    font-weight: 600;
+    color: #00695c;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
 
-    .floor-section {
-      background-color: #f5f7fa;
-      border-radius: 14px;
-      padding: 20px;
-      margin-top: 15px;
-    }
+  .appliance-card {
+    display: flex;
+    gap: 25px;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
 
-    .floor-title {
-      font-weight: 600;
-      font-size: 18px;
-      color: #444;
-      margin-bottom: 12px;
-    }
+  .appliance-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  }
 
-    .appliance-box {
-      background-color: #ffffff;
-      padding: 15px 20px;
-      border-radius: 12px;
-      border: 1px solid #e1e1e1;
-      margin-bottom: 12px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+  .appliance-img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 15px;
+    border: 2px solid rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
 
-    .appliance-box:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-    }
+  .appliance-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 
-    .appliance-title {
-      font-weight: 600;
-      color: #333;
-      font-size: 17px;
-    }
+  .appliance-info p {
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #004d40;
+  }
 
-    .appliance-meta {
-      font-size: 14px;
-      color: #666;
-    }
+  .appliance-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
 
-    .appliance-thumbnail {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      margin-right: 15px;
-    }
+  .btn-glass {
+    background: rgba(0, 128, 128, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 128, 128, 0.3);
+    border-radius: 12px;
+    color: #004d40;
+    font-weight: 600;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
 
-    .btn-outline-primary,
-    .btn-outline-danger,
-    .btn-outline-success,
-    .btn-outline-secondary {
-      border-radius: 10px;
-      padding: 7px 16px;
-      font-size: 14px;
-      transition: all 0.3s ease;
-    }
+  .btn-glass:hover {
+    background: rgba(0, 150, 150, 0.35);
+    color: #fff;
+    border-color: rgba(0,150,150,0.5);
+  }
 
-    .btn-outline-primary:hover {
-      background-color: #6c63ff;
-      color: #fff;
-      border-color: #6c63ff;
-    }
+  .text-muted {
+    font-style: italic;
+    color: #004d40;
+    text-align: center;
+  }
 
-    .btn-outline-danger:hover {
-      background-color: #ff6b6b;
-      color: #fff;
-      border-color: #ff6b6b;
-    }
-
-    .btn-outline-success:hover {
-      background-color: #4cd137;
-      color: #fff;
-      border-color: #4cd137;
-    }
-
-    .text-muted {
-      font-style: italic;
-      color: #7a7a7a;
-    }
-  </style>
+  form.d-inline button.btn-glass {
+    border: none;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="page-title">🏘 Your Properties, Floors & Appliances</h2>
+<div class="container">
+  <h2 class="page-title">🏘 Your Properties & Appliances</h2>
 
-    {% for property in properties %}
-      <div class="property-card">
-        <div class="property-header">
-          <div class="property-title">🏠 {{ property.name }}</div>
-          <div>
-            <a href="/edit_property/{{ property.id }}" class="btn btn-sm btn-outline-primary">✏️ Edit</a>
-            <form action="/delete_property/{{ property.id }}" method="post" class="d-inline" onsubmit="return confirm('Delete this property?');">
-              <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Delete</button>
-            </form>
-          </div>
-        </div>
-        <div class="property-address">📍 {{ property.address }}</div>
+  {% for property in properties %}
+  <div class="property-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="property-title">🏠 {{ property.name }}</div>
+      <div>
+        <a href="/edit_property/{{ property.id }}" class="btn-glass">✏️ Edit</a>
+        <form action="/delete_property/{{ property.id }}" method="post" class="d-inline" onsubmit="return confirm('Delete this property?');">
+          <button type="submit" class="btn-glass">🗑️ Delete</button>
+        </form>
+      </div>
+    </div>
+    <div class="property-address">📍 {{ property.address }}</div>
 
-        {% if floors_per_property[property.id] %}
-          {% for floor in floors_per_property[property.id] %}
-            <div class="floor-section">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="floor-title">🏢 Floor: {{ floor.floor_number|capitalize }}</div>
-                <a href="/edit_floor/{{ floor.id }}" class="btn btn-sm btn-outline-success">✏️ Edit Floor</a>
+    {% if floors_per_property[property.id] %}
+      {% for floor in floors_per_property[property.id] %}
+      <div class="floor-section">
+        <div class="floor-title">🏢 Floor: {{ floor.floor_number|capitalize }}</div>
+
+        {% if floor.appliances %}
+          {% for appliance in floor.appliances %}
+          <div class="appliance-card">
+            <img src="{% if appliance.front_image %}{{ url_for('static', path='images/' ~ appliance.front_image) }}{% else %}{{ url_for('static', path='images/default_appliance.jpg') }}{% endif %}"
+                 alt="{{ appliance.name }}" class="appliance-img">
+
+            <div class="appliance-info">
+              <div>
+                <p>📺 <strong>{{ appliance.name }}</strong></p>
+                <p>🆔 Model: {{ appliance.model }}</p>
+                <p>🎨 Color: {{ appliance.color }}</p>
+                <p>⚙️ Status: {{ appliance.status }}</p>
+                <p>📆 Warranty: {% if appliance.warranty_expiry %}{{ appliance.warranty_expiry.strftime('%b %d, %Y') }}{% else %}N/A{% endif %}</p>
               </div>
-
-              {% if floor.appliances %}
-                {% for appliance in floor.appliances %}
-                  <div class="appliance-box">
-                    <div class="d-flex align-items-center">
-                      <!-- ✅ Show only front image if exists -->
-                      <img src="{% if appliance.front_image %}
-                                   {{ url_for('static', path='images/' ~ appliance.front_image) }}
-                                 {% else %}
-                                   {{ url_for('static', path='images/default_appliance.jpg') }}
-                                 {% endif %}"
-                           alt="{{ appliance.name }} Front"
-                           class="appliance-thumbnail">
-
-                      <div class="flex-grow-1 ms-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <div class="appliance-title">📺 {{ appliance.name }} ({{ appliance.model }})</div>
-                          <div>
-                            <a href="/edit_appliance/{{ appliance.id }}" class="btn btn-sm btn-outline-secondary">✏️ Edit</a>
-                            <form action="/delete_appliance/{{ appliance.id }}" method="post" class="d-inline" onsubmit="return confirm('Delete this appliance?');">
-                              <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Delete</button>
-                            </form>
-                          </div>
-                        </div>
-
-                        <div class="row mt-2">
-                          <div class="col-md-6">
-                            <strong>🎨 Color:</strong> {{ appliance.color }}<br>
-                            <strong>⚙️ Status:</strong> {{ appliance.status }}
-                          </div>
-                          <div class="col-md-6">
-                            <strong>📍 Location:</strong> {{ appliance.location }}<br>
-                            <strong>📆 Warranty:</strong>
-                              {% if appliance.warranty_expiry %}
-                                {{ appliance.warranty_expiry.strftime('%b %d, %Y') }}
-                              {% else %}
-                                N/A
-                              {% endif %}
-                          </div>
-                        </div>
-                        <a href="/appliance/{{ appliance.id }}" class="btn btn-outline-primary w-100 mt-2">
-                          View Details
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="text-muted">🛠 No appliances on this floor.</div>
-              {% endif %}
+              <div class="appliance-buttons">
+                <a href="/appliance/{{ appliance.id }}" class="btn-glass">View Details</a>
+                <a href="/edit_appliance/{{ appliance.id }}" class="btn-glass">✏️ Edit</a>
+                <form action="/delete_appliance/{{ appliance.id }}" method="post" onsubmit="return confirm('Delete this appliance?');">
+                  <button type="submit" class="btn-glass">🗑️ Delete</button>
+                </form>
+              </div>
             </div>
+          </div>
           {% endfor %}
         {% else %}
-          <div class="text-muted">🚫 No floors added for this property.</div>
+          <p class="text-muted">🛠 No appliances on this floor.</p>
         {% endif %}
       </div>
-    {% endfor %}
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">🚫 No floors added for this property.</p>
+    {% endif %}
   </div>
+  {% endfor %}
+</div>
 </body>
 </html>

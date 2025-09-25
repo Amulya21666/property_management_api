@@ -380,13 +380,16 @@ def update_property(
     property_id: int = Form(...),
     name: str = Form(...),
     address: str = Form(...),
+    property_type: str = Form(...),
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
     if user.role != "owner":
         raise HTTPException(status_code=403, detail="Only owners can update properties.")
 
-    crud.update_property(db, property_id, name, address)
+    # Pass property_type to the CRUD function
+    crud.update_property(db, property_id, name, address, property_type)
+
     return RedirectResponse("/dashboard", status_code=HTTP_303_SEE_OTHER)
 
 @router.get("/edit_property/{property_id}", response_class=HTMLResponse)

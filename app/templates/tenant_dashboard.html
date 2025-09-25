@@ -15,28 +15,31 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+      background: linear-gradient(135deg, #ffe6f2, #ffd6eb); /* soft pink gradient */
       background-attachment: fixed;
       background-size: cover;
       min-height: 100vh;
       margin: 0;
       padding: 0;
     }
+
     .container {
       max-width: 1100px;
       padding-top: 40px;
       padding-bottom: 40px;
     }
+
+    /* Banner */
     .dashboard-banner {
-      background: linear-gradient(90deg, #007bff, #00c6ff);
-      color: #fff;
+      background: #ffb3d9;
+      color: white;
       padding: 25px 35px;
-      border-radius: 12px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       gap: 15px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-      margin-bottom: 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      margin-bottom: 35px;
     }
     .dashboard-banner h2 {
       margin: 0;
@@ -44,67 +47,93 @@
       font-weight: 600;
       font-size: 28px;
     }
+
+    /* Cards */
     .property-card, .appliance-card {
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      background: #ffd6eb; /* light pastel pink */
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
       padding: 20px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       margin-bottom: 25px;
     }
     .property-card:hover, .appliance-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.25);
     }
+
+    /* Titles */
     .section-title {
       font-weight: 600;
-      color: #007bff;
+      color: #b30059;
       margin-bottom: 20px;
     }
+
+    /* Appliance Layout */
     .appliance-card {
       display: flex;
-      align-items: center;
-      gap: 15px;
+      align-items: flex-start;
+      gap: 25px;
     }
     .appliance-card img {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
+      width: 200px;   /* bigger image */
+      height: 200px;
+      border-radius: 16px;
       object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.3);
-      background-color: rgba(255,255,255,0.2);
+      border: 3px solid #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
       flex-shrink: 0;
+    }
+    .appliance-info {
+      flex: 1;
     }
     .appliance-title {
       font-weight: 600;
-      font-size: 18px;
-      color: #222;
-      margin-bottom: 6px;
+      font-size: 22px;
+      color: #6a0dad;
+      margin-bottom: 10px;
     }
     .appliance-detail {
-      font-size: 14px;
+      font-size: 15px;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: #ffe6f2;
       color: #333;
-      margin-bottom: 3px;
     }
+    .appliance-detail strong {
+      color: #b30059;
+    }
+
+    /* Badges */
     .badge-status {
       font-size: 13px;
       font-weight: 500;
-      padding: 5px 8px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 10px;
     }
-    .logout-btn {
+
+    /* Buttons */
+    .logout-btn, .btn-danger {
       border: none;
-      background: linear-gradient(90deg, #007bff, #00c6ff);
+      background: linear-gradient(90deg, #ff99cc, #ff66b2);
       color: #fff;
-      font-size: 16px;
-      padding: 12px 25px;
-      border-radius: 8px;
-      transition: transform 0.3s ease;
+      font-size: 15px;
+      padding: 10px 22px;
+      border-radius: 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       text-decoration: none;
     }
-    .logout-btn:hover {
+    .logout-btn:hover, .btn-danger:hover {
       transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+
+    /* Input */
+    input.form-control-sm {
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #fff;
     }
   </style>
 </head>
@@ -145,9 +174,8 @@
                            {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
                          {% else %}
                            {{ url_for('static', path='uploads/default_appliance.jpg') }}
-                         {% endif %}"
-                   alt="{{ app.name }}">
-              <div>
+                         {% endif %}" alt="{{ app.name }}">
+              <div class="appliance-info">
                 <div class="appliance-title">{{ app.name }}</div>
                 <div class="appliance-detail"><strong>Model:</strong> {{ app.model }}</div>
                 <div class="appliance-detail"><strong>Color:</strong> {{ app.color }}</div>
@@ -168,7 +196,7 @@
                     <div class="mb-2">
                       <input type="text" name="description" class="form-control form-control-sm" placeholder="Describe the issue..." required>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-danger">
+                    <button type="submit" class="btn btn-danger btn-sm">
                       <i class="bi bi-exclamation-triangle-fill"></i> Report Issue
                     </button>
                   </form>

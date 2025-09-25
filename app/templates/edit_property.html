@@ -6,15 +6,16 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background: linear-gradient(to right, #c2e9fb, #a1c4fd);
+      background: linear-gradient(135deg, #c2e9fb, #a1c4fd);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 40px;
     }
 
     .form-container {
-      background: white;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(12px);
       padding: 35px;
-      border-radius: 16px;
+      border-radius: 20px;
       max-width: 600px;
       margin: auto;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -25,17 +26,40 @@
       font-weight: bold;
       text-align: center;
       margin-bottom: 25px;
-      color: #333;
+      color: #004d40;
     }
 
     label {
       font-weight: 600;
-      color: #444;
+      color: #004d40;
     }
 
-    .btn-update {
+    .form-control {
+      border-radius: 12px;
+    }
+
+    .btn-glass {
       width: 100%;
-      margin-top: 25px;
+      background: rgba(0, 95, 96, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0, 95, 96, 0.3);
+      border-radius: 12px;
+      color: #004d40;
+      font-weight: 600;
+      padding: 10px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .btn-glass:hover {
+      background: rgba(0,159,160,0.3);
+      color: #fff;
+      border-color: rgba(0,159,160,0.5);
+    }
+
+    .btn-back {
+      margin-top: 15px;
+      width: 100%;
     }
   </style>
 </head>
@@ -55,11 +79,16 @@
         <textarea name="address" class="form-control" rows="3" required>{{ property.address }}</textarea>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-update">Update Property</button>
+      <div class="mb-3">
+        <label for="property_type">Property Type</label>
+        <input type="text" name="property_type" class="form-control" value="{{ property.property_type }}" required>
+      </div>
+
+      <button type="submit" class="btn-glass">Update Property</button>
     </form>
 
     <div class="mt-3 text-center">
-      <a href="/view_properties" class="btn btn-secondary">🔙 Back</a>
+      <a href="/view_properties" class="btn btn-secondary btn-back">🔙 Back</a>
     </div>
   </div>
 </body>
