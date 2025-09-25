@@ -53,20 +53,9 @@
         <!-- Front Image -->
         <div>
           <h6 class="text-center">Front Image</h6>
-          <a href="{% if front_image %}
-                      {{ url_for('static', path='images/' + front_image) }}
-                   {% elif appliance.name|lower == 'refrigerator' %}
-                      {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
-                   {% else %}
-                      {{ url_for('static', path='images/default_appliance.jpg') }}
-                   {% endif %}" target="_blank">
-            <img src="{% if front_image %}
-                        {{ url_for('static', path='images/' + front_image) }}
-                     {% elif appliance.name|lower == 'refrigerator' %}
-                        {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
-                     {% else %}
-                        {{ url_for('static', path='images/default_appliance.jpg') }}
-                     {% endif %}"
+          {% set front_img = front_image or 'default_appliance.jpg' %}
+          <a href="{{ url_for('static', path='images/' + front_img) }}" target="_blank">
+            <img src="{{ url_for('static', path='images/' + front_img) }}"
                  alt="Front image of {{ appliance.name }}"
                  class="img-fluid rounded">
           </a>
@@ -75,20 +64,9 @@
         <!-- Detail Image -->
         <div>
           <h6 class="text-center">Detail Image</h6>
-          <a href="{% if detail_image %}
-                      {{ url_for('static', path='images/' + detail_image) }}
-                   {% elif appliance.name|lower == 'refrigerator' %}
-                      {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
-                   {% else %}
-                      {{ url_for('static', path='images/default_appliance.jpg') }}
-                   {% endif %}" target="_blank">
-            <img src="{% if detail_image %}
-                        {{ url_for('static', path='images/' + detail_image) }}
-                     {% elif appliance.name|lower == 'refrigerator' %}
-                        {{ url_for('static', path='images/refrigerator_default_appliance.jpg') }}
-                     {% else %}
-                        {{ url_for('static', path='images/default_appliance.jpg') }}
-                     {% endif %}"
+          {% set detail_img = detail_image or 'default_appliance.jpg' %}
+          <a href="{{ url_for('static', path='images/' + detail_img) }}" target="_blank">
+            <img src="{{ url_for('static', path='images/' + detail_img) }}"
                  alt="Detail image of {{ appliance.name }}"
                  class="img-fluid rounded">
           </a>

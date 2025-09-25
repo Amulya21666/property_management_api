@@ -8,6 +8,9 @@ from fastapi import Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
+import shutil
+from fastapi import UploadFile
+
 
 # --------------------------
 # Constants for email sending
@@ -119,3 +122,23 @@ def send_activation_email(to_email: str, token: str):
     except Exception as e:
         print(f"❌ Exception while sending activation email: {e}")
         return False
+
+# --------------------------
+# FILE UPLOAD / IMAGE SAVING
+# --------------------------
+UPLOADS_DIR = "app/static/images"
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+def save_file(upload_file: UploadFile, name: str, suffix: str) -> str | None:
+    """
+    Save an uploaded file to static/images folder.
+    Returns the saved filename or None if no file provided.
+    """
+    if upload_file and upload_file.filename:
+        safe_filename = f"{name}_{suffix}_{upload_file.filename}".replace(" ", "_")
+        file_path = os.path.join(UPLOADS_DIR, safe_filename)
+        with open(file_path, "wb") as f:
+            shutil.copyfileobj(upload_file.file, f)
+        upload_file.file.close()
+        return safe_filename
+    return None

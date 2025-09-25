@@ -303,3 +303,23 @@ def get_tenant_property(db, tenant_id: int):
     if not tenant or not tenant.property_id:
         return None
     return db.query(Property).filter(Property.id == tenant.property_id).first()
+
+from app.utils import save_file
+
+def create_appliance_with_images(
+    db: Session, user_id: int, name: str, model: str, color: str,
+    status: str, warranty_expiry: date, property_id: int, floor_id: int,
+    location: str, front_file: UploadFile = None, detail_file: UploadFile = None
+):
+    # Save files
+    front_image = save_file(front_file, name, "front") if front_file else None
+    detail_image = save_file(detail_file, name, "detail") if detail_file else None
+
+    # Create appliance object
+    appliance = create_appliance(
+        db, user_id=user_id, name=name, model=model, color=color,
+        status=status, warranty_expiry=warranty_expiry,
+        property_id=property_id, floor_id=floor_id,
+        location=location, front_image=front_image, detail_image=detail_image
+    )
+    return appliance
