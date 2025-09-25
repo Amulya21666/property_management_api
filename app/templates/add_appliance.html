@@ -12,7 +12,7 @@
       padding: 30px;
     }
     .form-container {
-      max-width: 700px;
+      max-width: 750px;
       margin: 0 auto;
       background: #fff;
       border-radius: 20px;
@@ -27,23 +27,53 @@
 <body>
 
 <div class="form-container">
-  <h2>Add New Appliance</h2>
+  <h2><i class="bi bi-plus-circle"></i> Add New Appliance</h2>
   <form action="/add_appliance" method="post" enctype="multipart/form-data">
+
+    <!-- Property Selection -->
+    <div class="mb-3">
+      <label for="property_id" class="form-label">Select Property</label>
+      <select class="form-select" id="property_id" name="property_id" required>
+        <option value="" disabled selected>Choose Property</option>
+        {% for property in properties %}
+          <option value="{{ property.id }}">{{ property.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Place Selection -->
+    <div class="mb-3">
+      <label for="place" class="form-label">Select Place</label>
+      <select class="form-select" id="place" name="place" required>
+        <option value="" disabled selected>Choose Place</option>
+        <option value="Living Room">Living Room</option>
+        <option value="Kitchen">Kitchen</option>
+        <option value="Bedroom">Bedroom</option>
+        <option value="Bathroom">Bathroom</option>
+        <option value="Balcony">Balcony</option>
+        <option value="Dining Room">Dining Room</option>
+      </select>
+    </div>
+
+    <!-- Appliance Name -->
     <div class="mb-3">
       <label for="name" class="form-label">Appliance Name</label>
       <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Refrigerator" required>
     </div>
 
+    <!-- Model -->
     <div class="mb-3">
       <label for="model" class="form-label">Model</label>
       <input type="text" class="form-control" id="model" name="model" placeholder="e.g., RF28R7351SR" required>
     </div>
 
+    <!-- Color -->
     <div class="mb-3">
       <label for="color" class="form-label">Color</label>
       <input type="text" class="form-control" id="color" name="color" placeholder="e.g., Silver" required>
     </div>
 
+    <!-- Status -->
     <div class="mb-3">
       <label for="status" class="form-label">Status</label>
       <select class="form-select" id="status" name="status" required>
@@ -52,11 +82,13 @@
       </select>
     </div>
 
+    <!-- Warranty -->
     <div class="mb-3">
       <label for="warranty_expiry" class="form-label">Warranty Expiry</label>
       <input type="date" class="form-control" id="warranty_expiry" name="warranty_expiry" value="{{ current_date }}" required>
     </div>
 
+    <!-- Images -->
     <div class="mb-3">
       <label for="front_image" class="form-label">Front Image</label>
       <input type="file" class="form-control" id="front_image" name="front_image" accept="image/*">
@@ -67,12 +99,14 @@
       <input type="file" class="form-control" id="detail_image" name="detail_image" accept="image/*">
     </div>
 
+    <!-- Submit -->
     <div class="mb-3 text-center">
-      <button type="submit" class="btn btn-primary btn-lg">Add Appliance</button>
+      <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-save"></i> Add Appliance</button>
     </div>
 
+    <!-- Back -->
     <div class="text-center">
-      <a href="/view_properties" class="btn btn-secondary">⬅ Back to Properties</a>
+      <a href="/view_properties" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to Properties</a>
     </div>
   </form>
 </div>
