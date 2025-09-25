@@ -185,7 +185,7 @@ body {
         {% for app in appliance_list %}
         <div class="col-md-12">
             <div class="appliance-card">
-                <img src="{% if app.front_image %}{{ url_for('static', path='uploads/' ~ app.front_image) }}{% else %}{{ url_for('static', path='uploads/default_appliance.jpg') }}{% endif %}" alt="{{ app.name }}">
+                <img src="{{ url_for('static', path='images/' ~ (app.front_image or 'default_appliance.jpg')) }}" alt="{{ app.name }}">
                 <div class="appliance-details">
                     <div class="appliance-title"><i class="bi bi-lightning-charge-fill"></i> {{ app.name }}</div>
                     <div class="appliance-detail"><strong>Model:</strong> {{ app.model }}</div>
