@@ -3,6 +3,8 @@ import uuid
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+from fastapi import UploadFile
+
 
 from app.models import (
     Property, User, Appliance, Floor, ActivityLog,
