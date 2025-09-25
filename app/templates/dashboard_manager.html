@@ -2,259 +2,214 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Owner Dashboard</title>
+  <title>Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Roboto&display=swap" rel="stylesheet">
+
   <style>
     body {
-      background:
-        linear-gradient(to bottom right, rgba(135, 206, 235, 0.85), rgba(224, 247, 255, 0.85)),
-        url("{{ url_for('static', path='dashboard.jpg') }}") no-repeat center center fixed;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #c8e6f5);
+      background-attachment: fixed;
       background-size: cover;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 30px 50px;
       min-height: 100vh;
+      margin: 0;
+      padding: 0;
     }
 
-    .welcome-banner {
-      background-color: rgba(255,255,255,0.9);
-      border-radius: 20px;
-      padding: 60px 30px;
-      margin-bottom: 40px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      text-align: center;
-      transition: transform 0.3s ease;
-      min-height: 200px;
-    }
-    .welcome-banner:hover { transform: translateY(-5px); }
-    .welcome-banner h2 { font-size: 36px; margin-bottom: 15px; }
-    .welcome-banner p { font-size: 20px; color: #555; }
+    .container { max-width: 1100px; padding-top: 40px; padding-bottom: 40px; }
 
-    .stats-container { display: flex; flex-wrap: wrap; gap: 25px; margin-bottom: 50px; }
-    .stats-card {
-      flex: 1 1 calc(25% - 25px);
-      background-color: rgba(255,255,255,0.9);
-      border-radius: 18px;
-      padding: 50px 20px;
-      text-align: center;
-      font-size: 20px;
-      font-weight: 500;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      min-height: 220px;
-    }
-    .stats-card:hover { transform: translateY(-6px); box-shadow: 0 12px 28px rgba(0,0,0,0.15); }
-    .stats-card span { display: block; font-size: 36px; font-weight: bold; margin-top: 10px; color: #333; }
-
-    .action-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
-      width: 100%;
-      margin-bottom: 50px;
-    }
-    .action-card {
-      background-color: rgba(255,255,255,0.9);
-      border-radius: 20px;
-      padding: 50px 25px;
-      text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.07);
-      min-height: 240px;
-      cursor: pointer;
-    }
-    .action-card:hover { transform: translateY(-6px); box-shadow: 0 14px 32px rgba(0,0,0,0.15); background: linear-gradient(145deg, #f0f8ff, #ffffff); }
-    .action-card-icon { font-size: 60px; margin-bottom: 20px; }
-    .action-card-text { font-weight: 700; font-size: 24px; color: #333; }
-    a.text-decoration-none { color: inherit; }
-
-    .tech-section { margin-top: 50px; }
-    .tech-card {
-      background-color: rgba(255,255,255,0.9);
-      border-radius: 20px;
-      padding: 40px 25px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.08);
-      min-height: 260px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .dashboard-banner {
+      background: linear-gradient(90deg, #4e73df, #6c5ce7);
+      color: #fff;
+      padding: 25px 35px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
       margin-bottom: 30px;
     }
-    .tech-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
-    .tech-card h5 { font-weight: 700; margin-bottom: 15px; }
-    .tech-card ul { max-height: 180px; overflow-y: auto; padding-left: 15px; }
 
-    .appliance-card {
-      background-color: rgba(255,255,255,0.9);
-      border-radius: 20px;
+    .dashboard-banner h2 { margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 28px; }
+    .dashboard-banner p { margin: 0; font-size: 16px; }
+
+    .card-stat, .property-card, .appliance-card, .alert-custom {
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
       padding: 20px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 25px;
     }
-    .appliance-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
-    .appliance-card img { margin-bottom: 15px; }
-    .tenant-table th, .tenant-table td { vertical-align: middle; }
 
-    /* Invite Tenant Form */
-    .invite-form-card {
-      background-color: rgba(255,255,255,0.95);
-      border-radius: 20px;
-      padding: 40px 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      margin-bottom: 40px;
-      max-width: 700px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .card-stat:hover, .property-card:hover, .appliance-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
-    .invite-form-card:hover { transform: translateY(-5px); box-shadow: 0 14px 32px rgba(0,0,0,0.15); }
-    .invite-form-card h4 { text-align: center; margin-bottom: 30px; font-weight: 700; }
+
+    .card-stat h5 { font-weight: 600; color: #4e73df; margin-bottom: 10px; }
+    .card-stat p { font-size: 32px; font-weight: bold; color: #222; margin: 0; }
+
+    .section-title { font-weight: 600; color: #4e73df; margin-bottom: 20px; }
+
+    .appliance-card { display: flex; align-items: center; gap: 15px; }
+    .appliance-card img {
+      width: 80px; height: 80px; border-radius: 12px; object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.25); background-color: rgba(255,255,255,0.15);
+      flex-shrink: 0;
+    }
+
+    .appliance-title { font-weight: 600; font-size: 18px; color: #222; margin-bottom: 6px; }
+    .appliance-detail { font-size: 14px; color: #333; margin-bottom: 3px; }
+    .badge-status { font-size: 13px; font-weight: 500; padding: 5px 8px; border-radius: 8px; }
+
+    .alert-custom { border-left: 5px solid #4e73df; }
+
+    .logout-btn {
+      border: none;
+      background: linear-gradient(90deg, #4e73df, #6c5ce7);
+      color: #fff;
+      font-size: 16px;
+      padding: 12px 25px;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+      text-decoration: none;
+    }
+
+    .logout-btn:hover { transform: translateY(-3px); }
   </style>
+
 </head>
 <body>
+  <div class="container">
 
-<div class="container-fluid">
-
-  <!-- Greeting -->
-  <div class="welcome-banner">
-    <h2>Hello {{ user.username }} 👋</h2>
-    <p>Manage your properties, appliances, and tenants!</p>
-  </div>
-
-  <!-- Stats -->
-  <div class="stats-container">
-    <div class="stats-card">🏘 Total Properties<span>{{ total_properties_count }}</span></div>
-    <div class="stats-card">🏢 Total Floors<span>{{ total_floors_count }}</span></div>
-    <div class="stats-card">🔌 Total Appliances<span>{{ total_appliance_count }}</span></div>
-    <div class="stats-card">⏳ Expiring Soon<span>{{ appliances_expiring_count }}</span></div>
-  </div>
-
-  <!-- Action Buttons -->
-  <div class="action-grid">
-    <a href="/add_property_page" class="text-decoration-none">
-      <div class="action-card">
-        <div class="action-card-icon text-success"><i class="bi bi-building-add"></i></div>
-        <div class="action-card-text">Add Property</div>
-      </div>
-    </a>
-    <a href="/assign_property_page" class="text-decoration-none">
-      <div class="action-card">
-        <div class="action-card-icon text-primary"><i class="bi bi-person-badge-fill"></i></div>
-        <div class="action-card-text">Assign Property</div>
-      </div>
-    </a>
-    <a href="/add_appliance_page" class="text-decoration-none">
-      <div class="action-card">
-        <div class="action-card-icon text-warning"><i class="bi bi-plug-fill"></i></div>
-        <div class="action-card-text">Add Appliance</div>
-      </div>
-    </a>
-    <a href="/view_properties" class="text-decoration-none">
-      <div class="action-card">
-        <div class="action-card-icon text-info"><i class="bi bi-house-gear-fill"></i></div>
-        <div class="action-card-text">View Properties</div>
-      </div>
-    </a>
-    <a href="/owner/invite_tenant_page" class="text-decoration-none">
-      <div class="action-card">
-        <div class="action-card-icon text-secondary"><i class="bi bi-person-plus-fill"></i></div>
-        <div class="action-card-text">Invite Tenant</div>
-      </div>
-    </a>
-    <a href="/owner/issues" class="text-decoration-none">
-      <div class="action-card">
-        <div class="action-card-icon text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
-        <div class="action-card-text">View Reported Issues</div>
-      </div>
-    </a>
-  </div>
-
-
-  <!-- Technical Insights -->
-  <div class="tech-section">
-    <div class="row">
-      <div class="col-md-6">
-        <div class="tech-card text-center">
-          <h5>Overall Appliance Health</h5>
-          <div style="width:300px; height:220px; margin:auto;">
-            <canvas id="gaugeChart"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="tech-card text-center">
-          <h5>Appliance Types vs Status</h5>
-          <div style="width:400px; height:300px; margin:auto;">
-            <canvas id="stackedBarChart"></canvas>
-          </div>
-        </div>
+    <!-- Banner -->
+    <div class="dashboard-banner">
+      <div>
+        <h2><i class="bi bi-tools"></i> Dashboard</h2>
+        <p>Welcome, <strong>{{ user.username }}</strong> ({{ user.role|capitalize }})</p>
       </div>
     </div>
-  </div>
 
-  <!-- Activity Logs -->
-  <div class="row mt-4">
-    <div class="col-md-12">
-      <div class="tech-card">
-        <h5>Recent Activity Logs</h5>
-        {% if logs %}
-          <ul>
-            {% for log in logs %}
-              <li>{{ log.timestamp.strftime("%Y-%m-%d %H:%M:%S") }} - <strong>{{ log.user }}</strong> {{ log.action }}</li>
+    <!-- Total Appliances -->
+    <div class="card-stat">
+      <h5><i class="bi bi-plug-fill"></i> Total Appliances</h5>
+      <p>{{ total_appliance_count }}</p>
+    </div>
+
+    <!-- Warranty Alerts -->
+    {% if expiry_alerts %}
+      <div class="alert-custom">
+        <h5><i class="bi bi-exclamation-triangle-fill"></i> Warranty Expiry Alerts</h5>
+        <ul class="mb-0">
+          {% for alert in expiry_alerts %}
+            <li>
+              <strong>{{ alert.name }}</strong> ({{ alert.model }}) in <strong>{{ alert.property_name }}</strong> –
+              {% if alert.status == 'expired' %}
+                <span class="badge bg-danger badge-status">Expired on {{ alert.expiry }}</span>
+              {% elif alert.status == 'expiring_soon' %}
+                <span class="badge bg-warning text-dark badge-status">Expiring on {{ alert.expiry }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Assigned Properties -->
+    <h4 class="section-title"><i class="bi bi-buildings"></i> Assigned Properties</h4>
+    {% if properties %}
+      <div class="row g-4 mb-5">
+        {% for prop in properties %}
+          <div class="col-md-6">
+            <div class="property-card">
+              <h5><i class="bi bi-building"></i> {{ prop.name }}</h5>
+              <p class="text-muted"><i class="bi bi-geo-alt"></i> {{ prop.address }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No properties assigned yet.</p>
+    {% endif %}
+
+    <!-- Appliances per Property -->
+    <h4 class="section-title"><i class="bi bi-plug-fill"></i> Appliances per Property</h4>
+    {% for prop in properties %}
+      <div class="property-card mb-4">
+        <h5><i class="bi bi-building"></i> {{ prop.name }}</h5>
+        <p class="text-muted"><i class="bi bi-geo-alt"></i> {{ prop.address }}</p>
+        {% set appliance_list = appliances_per_property.get(prop.id, []) %}
+        {% if appliance_list %}
+          <div class="row g-3 mt-3">
+            {% for app in appliance_list %}
+              <div class="col-md-6">
+                <div class="appliance-card">
+                  <img src="{% if app.front_image %}
+                              {{ url_for('static', path='uploads/' ~ app.front_image) }}
+                            {% elif app.name|lower == 'refrigerator' %}
+                              {{ url_for('static', path='uploads/refrigerator_default_appliance.jpg') }}
+                            {% else %}
+                              {{ url_for('static', path='uploads/default_appliance.jpg') }}
+                            {% endif %}"
+                       alt="{{ app.name }}" class="img-fluid rounded">
+                  <div>
+                    <div class="appliance-title"><i class="bi bi-lightning-charge-fill"></i> {{ app.name }}</div>
+                    <div class="appliance-detail"><strong>Model:</strong> {{ app.model }}</div>
+                    <div class="appliance-detail"><strong>Color:</strong> {{ app.color }}</div>
+                    <div class="appliance-detail">
+                      <strong>Status:</strong>
+                      {% if app.status.lower() == 'working' %}
+                        <span class="badge bg-success badge-status">Working</span>
+                      {% else %}
+                        <span class="badge bg-danger badge-status">{{ app.status }}</span>
+                      {% endif %}
+                    </div>
+                    <div class="appliance-detail"><strong>Warranty:</strong> {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}</div>
+                    <div class="appliance-detail"><strong>📍 Location:</strong> {{ app.location if app.location else 'N/A' }}</div>
+
+                    <!-- VIEW + EDIT BUTTONS -->
+                    <div class="mt-2 d-flex gap-2">
+                      <a href="{{ url_for('appliance_detail', appliance_id=app.id) }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-eye"></i> View Details
+                      </a>
+                      {% if user.role in ["owner", "manager"] %}
+                        <a href="{{ url_for('edit_appliance_page', appliance_id=app.id) }}" class="btn btn-sm btn-success">
+                          <i class="bi bi-pencil-square"></i> Edit
+                        </a>
+                        <a href="/manager/issues" class="text-decoration-none">
+                          <div class="action-card">
+                            <div class="action-card-icon text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                            <div class="action-card-text">View Reported Issues</div>
+                          </div>
+                        </a>
+                      {% endif %}
+                    </div>
+
+                  </div>
+                </div>
+              </div>
             {% endfor %}
-          </ul>
+          </div>
         {% else %}
-          <p>No recent activity.</p>
+          <p class="text-muted mt-2">No appliances added for this property yet.</p>
         {% endif %}
       </div>
+    {% endfor %}
+
+    <!-- Logout -->
+    <div class="text-center my-5">
+      <a href="/logout" class="logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</a>
     </div>
+
   </div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-let gaugeChart, stackedBarChart;
-
-function initCharts() {
-    const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
-    gaugeChart = new Chart(ctxGauge, {
-        type: 'doughnut',
-        data: { labels: ['Working', 'Not Working'], datasets: [{ data: [0,100], backgroundColor: ['#4CAF50','#E53935'], borderWidth:0 }] },
-        options: { rotation:-90, circumference:180, cutout:'70%', plugins:{ legend:{ display:false } } }
-    });
-
-    const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
-    stackedBarChart = new Chart(ctxBar, {
-        type:'bar',
-        data:{ labels:[], datasets:[
-            {label:'Working', data:[], backgroundColor:'#4CAF50'},
-            {label:'Not Working', data:[], backgroundColor:'#E53935'},
-            {label:'Warranty Expired', data:[], backgroundColor:'#FFC107'}
-        ]},
-        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1 } } } }
-    });
-}
-
-async function loadCharts() {
-    const res = await fetch("/api/appliance-stats");
-    const data = await res.json();
-
-    gaugeChart.data.datasets[0].data = [data.health_percent||0, 100-(data.health_percent||0)];
-    gaugeChart.update();
-
-    const labels = Object.keys(data.type_status||{});
-    stackedBarChart.data.labels = labels;
-    stackedBarChart.data.datasets[0].data = labels.map(l => data.type_status[l]?.Working||0);
-    stackedBarChart.data.datasets[1].data = labels.map(l => data.type_status[l]?.["Not Working"]||0);
-    stackedBarChart.data.datasets[2].data = labels.map(l => data.type_status[l]?.["Warranty Expired"]||0);
-    stackedBarChart.update();
-}
-
-initCharts();
-loadCharts();
-</script>
-
 </body>
 </html>
