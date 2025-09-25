@@ -479,3 +479,9 @@ def approve_bill(
     db.commit()
 
     return RedirectResponse("/manager/issues", status_code=303)
+
+
+@router.get("/view_appliances")
+def view_appliances(request: Request, db: Session = Depends(get_db)):
+    appliances = crud.get_all_appliances(db)  # Make sure this function returns all appliances
+    return templates.TemplateResponse("view_appliances.html", {"request": request, "appliances": appliances})
