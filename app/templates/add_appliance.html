@@ -7,109 +7,170 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
-      background: linear-gradient(to right, #f9f9f9, #e9ecef);
+      background: linear-gradient(135deg, #f8f9fa, #e9f5ec);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 30px;
+      padding: 40px;
     }
     .form-container {
-      max-width: 750px;
+      max-width: 800px;
       margin: 0 auto;
-      background: #fff;
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    h2 { text-align: center; margin-bottom: 30px; color: #28a745; }
-    .btn-primary { width: 100%; }
-    .form-label { font-weight: 600; }
+    .card {
+      border-radius: 20px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+      border: none;
+    }
+    .card-header {
+      background: #28a745;
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      border-radius: 20px 20px 0 0;
+      padding: 20px;
+    }
+    .form-label {
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: #28a745;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 1.1rem;
+    }
+    .btn-primary:hover {
+      background: #218838;
+    }
+    .btn-secondary {
+      border-radius: 10px;
+    }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 10px;
+      border-left: 4px solid #28a745;
+      padding-left: 10px;
+    }
   </style>
 </head>
 <body>
 
 <div class="form-container">
-  <h2><i class="bi bi-plus-circle"></i> Add New Appliance</h2>
-  <form action="/add_appliance" method="post" enctype="multipart/form-data">
-
-    <!-- Property Selection -->
-    <div class="mb-3">
-      <label for="property_id" class="form-label">Select Property</label>
-      <select class="form-select" id="property_id" name="property_id" required>
-        <option value="" disabled selected>Choose Property</option>
-        {% for property in properties %}
-          <option value="{{ property.id }}">{{ property.name }}</option>
-        {% endfor %}
-      </select>
+  <div class="card">
+    <div class="card-header">
+      <i class="bi bi-plus-circle"></i> Add New Appliance
     </div>
+    <div class="card-body p-4">
+      <form action="/add_appliance" method="post" enctype="multipart/form-data">
 
-    <!-- Place Selection -->
-    <div class="mb-3">
-      <label for="place" class="form-label">Select Place</label>
-      <select class="form-select" id="place" name="place" required>
-        <option value="" disabled selected>Choose Place</option>
-        <option value="Living Room">Living Room</option>
-        <option value="Kitchen">Kitchen</option>
-        <option value="Bedroom">Bedroom</option>
-        <option value="Bathroom">Bathroom</option>
-        <option value="Balcony">Balcony</option>
-        <option value="Dining Room">Dining Room</option>
-      </select>
-    </div>
+        <!-- Property & Floor Section -->
+        <p class="section-title"><i class="bi bi-building"></i> Location Details</p>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="property_id" class="form-label">Select Property</label>
+            <select class="form-select" id="property_id" name="property_id" required>
+              <option value="" disabled selected>Choose Property</option>
+              {% for property in properties %}
+                <option value="{{ property.id }}">{{ property.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="floor_id" class="form-label">Select Floor</label>
+            <select class="form-select" id="floor_id" name="floor_id" required>
+              <option value="" disabled selected>Choose Floor</option>
+            </select>
+          </div>
+        </div>
 
-    <!-- Appliance Name -->
-    <div class="mb-3">
-      <label for="name" class="form-label">Appliance Name</label>
-      <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Refrigerator" required>
-    </div>
+        <div class="mb-3">
+          <label for="place" class="form-label">Select Place</label>
+          <select class="form-select" id="place" name="place" required>
+            <option value="" disabled selected>Choose Place</option>
+            <option value="Living Room">Living Room</option>
+            <option value="Kitchen">Kitchen</option>
+            <option value="Bedroom">Bedroom</option>
+            <option value="Bathroom">Bathroom</option>
+            <option value="Balcony">Balcony</option>
+            <option value="Dining Room">Dining Room</option>
+          </select>
+        </div>
 
-    <!-- Model -->
-    <div class="mb-3">
-      <label for="model" class="form-label">Model</label>
-      <input type="text" class="form-control" id="model" name="model" placeholder="e.g., RF28R7351SR" required>
-    </div>
+        <!-- Appliance Details -->
+        <p class="section-title"><i class="bi bi-tools"></i> Appliance Details</p>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="name" class="form-label">Appliance Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Refrigerator" required>
+          </div>
+          <div class="col-md-6">
+            <label for="model" class="form-label">Model</label>
+            <input type="text" class="form-control" id="model" name="model" placeholder="e.g., RF28R7351SR" required>
+          </div>
+        </div>
 
-    <!-- Color -->
-    <div class="mb-3">
-      <label for="color" class="form-label">Color</label>
-      <input type="text" class="form-control" id="color" name="color" placeholder="e.g., Silver" required>
-    </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="color" class="form-label">Color</label>
+            <input type="text" class="form-control" id="color" name="color" placeholder="e.g., Silver" required>
+          </div>
+          <div class="col-md-6">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-select" id="status" name="status" required>
+              <option value="Working">Working</option>
+              <option value="Not Working">Not Working</option>
+            </select>
+          </div>
+        </div>
 
-    <!-- Status -->
-    <div class="mb-3">
-      <label for="status" class="form-label">Status</label>
-      <select class="form-select" id="status" name="status" required>
-        <option value="Working">Working</option>
-        <option value="Not Working">Not Working</option>
-      </select>
-    </div>
+        <div class="mb-3">
+          <label for="warranty_expiry" class="form-label">Warranty Expiry</label>
+          <input type="date" class="form-control" id="warranty_expiry" name="warranty_expiry" value="{{ current_date }}" required>
+        </div>
 
-    <!-- Warranty -->
-    <div class="mb-3">
-      <label for="warranty_expiry" class="form-label">Warranty Expiry</label>
-      <input type="date" class="form-control" id="warranty_expiry" name="warranty_expiry" value="{{ current_date }}" required>
-    </div>
+        <!-- Image Upload -->
+        <p class="section-title"><i class="bi bi-image"></i> Upload Images</p>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="front_image" class="form-label">Front Image</label>
+            <input type="file" class="form-control" id="front_image" name="front_image" accept="image/*">
+          </div>
+          <div class="col-md-6">
+            <label for="detail_image" class="form-label">Detail Image</label>
+            <input type="file" class="form-control" id="detail_image" name="detail_image" accept="image/*">
+          </div>
+        </div>
 
-    <!-- Images -->
-    <div class="mb-3">
-      <label for="front_image" class="form-label">Front Image</label>
-      <input type="file" class="form-control" id="front_image" name="front_image" accept="image/*">
+        <!-- Buttons -->
+        <div class="d-flex justify-content-between">
+          <a href="/view_properties" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Add Appliance</button>
+        </div>
+      </form>
     </div>
-
-    <div class="mb-3">
-      <label for="detail_image" class="form-label">Detail Image</label>
-      <input type="file" class="form-control" id="detail_image" name="detail_image" accept="image/*">
-    </div>
-
-    <!-- Submit -->
-    <div class="mb-3 text-center">
-      <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-save"></i> Add Appliance</button>
-    </div>
-
-    <!-- Back -->
-    <div class="text-center">
-      <a href="/view_properties" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to Properties</a>
-    </div>
-  </form>
+  </div>
 </div>
+
+<script>
+  const floorsDict = {{ floors_json | safe }};
+  const propertySelect = document.getElementById("property_id");
+  const floorSelect = document.getElementById("floor_id");
+
+  propertySelect.addEventListener("change", function () {
+    const propertyId = this.value;
+    floorSelect.innerHTML = '<option value="" disabled selected>Choose Floor</option>';
+    if (propertyId && floorsDict[propertyId]) {
+      floorsDict[propertyId].forEach(floor => {
+        let opt = document.createElement("option");
+        opt.value = floor.id;
+        opt.textContent = "Floor " + floor.floor_number;
+        floorSelect.appendChild(opt);
+      });
+    }
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
