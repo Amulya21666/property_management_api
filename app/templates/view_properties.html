@@ -173,6 +173,7 @@
                 <p>🎨 Color: {{ appliance.color }}</p>
                 <p>⚙️ Status: {{ appliance.status }}</p>
                 <p>📆 Warranty: {% if appliance.warranty_expiry %}{{ appliance.warranty_expiry.strftime('%b %d, %Y') }}{% else %}N/A{% endif %}</p>
+                <p>📍 Location: {% if appliance.location %}{{ appliance.location }
               </div>
               <div class="appliance-buttons">
                 <a href="/appliance/{{ appliance.id }}" class="btn-glass">View Details</a>
