@@ -12,7 +12,7 @@
     body {
       background:
         linear-gradient(to bottom right, rgba(135, 206, 235, 0.85), rgba(224, 247, 255, 0.85)),
-        url("{{ url_for('static', path='images/dashboard.jpg') }}") no-repeat center center fixed;
+        url("{{ url_for('static', path='dashboard.jpg') }}") no-repeat center center fixed;
       background-size: cover;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 30px 50px;
@@ -95,7 +95,6 @@
     }
     .appliance-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
     .appliance-card img { margin-bottom: 15px; }
-
     .tenant-table th, .tenant-table td { vertical-align: middle; }
 
     /* Invite Tenant Form */
@@ -170,6 +169,47 @@
     </a>
   </div>
 
+
+  <!-- Technical Insights -->
+  <div class="tech-section">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="tech-card text-center">
+          <h5>Overall Appliance Health</h5>
+          <div style="width:300px; height:220px; margin:auto;">
+            <canvas id="gaugeChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="tech-card text-center">
+          <h5>Appliance Types vs Status</h5>
+          <div style="width:400px; height:300px; margin:auto;">
+            <canvas id="stackedBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Logs -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="tech-card">
+        <h5>Recent Activity Logs</h5>
+        {% if logs %}
+          <ul>
+            {% for log in logs %}
+              <li>{{ log.timestamp.strftime("%Y-%m-%d %H:%M:%S") }} - <strong>{{ log.user }}</strong> {{ log.action }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No recent activity.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -178,46 +218,38 @@
 let gaugeChart, stackedBarChart;
 
 function initCharts() {
-    const ctxGauge = document.getElementById('gaugeChart')?.getContext('2d');
-    if(ctxGauge) {
-        gaugeChart = new Chart(ctxGauge, {
-            type: 'doughnut',
-            data: { labels: ['Working', 'Not Working'], datasets: [{ data: [0,100], backgroundColor: ['#4CAF50','#E53935'], borderWidth:0 }] },
-            options: { rotation:-90, circumference:180, cutout:'70%', plugins:{ legend:{ display:false } } }
-        });
-    }
+    const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
+    gaugeChart = new Chart(ctxGauge, {
+        type: 'doughnut',
+        data: { labels: ['Working', 'Not Working'], datasets: [{ data: [0,100], backgroundColor: ['#4CAF50','#E53935'], borderWidth:0 }] },
+        options: { rotation:-90, circumference:180, cutout:'70%', plugins:{ legend:{ display:false } } }
+    });
 
-    const ctxBar = document.getElementById('stackedBarChart')?.getContext('2d');
-    if(ctxBar){
-        stackedBarChart = new Chart(ctxBar, {
-            type:'bar',
-            data:{ labels:[], datasets:[
-                {label:'Working', data:[], backgroundColor:'#4CAF50'},
-                {label:'Not Working', data:[], backgroundColor:'#E53935'},
-                {label:'Warranty Expired', data:[], backgroundColor:'#FFC107'}
-            ]},
-            options:{ responsive:true, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1 } } } }
-        });
-    }
+    const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
+    stackedBarChart = new Chart(ctxBar, {
+        type:'bar',
+        data:{ labels:[], datasets:[
+            {label:'Working', data:[], backgroundColor:'#4CAF50'},
+            {label:'Not Working', data:[], backgroundColor:'#E53935'},
+            {label:'Warranty Expired', data:[], backgroundColor:'#FFC107'}
+        ]},
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1 } } } }
+    });
 }
 
 async function loadCharts() {
     const res = await fetch("/api/appliance-stats");
     const data = await res.json();
 
-    if(gaugeChart){
-        gaugeChart.data.datasets[0].data = [data.health_percent||0, 100-(data.health_percent||0)];
-        gaugeChart.update();
-    }
+    gaugeChart.data.datasets[0].data = [data.health_percent||0, 100-(data.health_percent||0)];
+    gaugeChart.update();
 
-    if(stackedBarChart){
-        const labels = Object.keys(data.type_status||{});
-        stackedBarChart.data.labels = labels;
-        stackedBarChart.data.datasets[0].data = labels.map(l => data.type_status[l]?.Working||0);
-        stackedBarChart.data.datasets[1].data = labels.map(l => data.type_status[l]?.["Not Working"]||0);
-        stackedBarChart.data.datasets[2].data = labels.map(l => data.type_status[l]?.["Warranty Expired"]||0);
-        stackedBarChart.update();
-    }
+    const labels = Object.keys(data.type_status||{});
+    stackedBarChart.data.labels = labels;
+    stackedBarChart.data.datasets[0].data = labels.map(l => data.type_status[l]?.Working||0);
+    stackedBarChart.data.datasets[1].data = labels.map(l => data.type_status[l]?.["Not Working"]||0);
+    stackedBarChart.data.datasets[2].data = labels.map(l => data.type_status[l]?.["Warranty Expired"]||0);
+    stackedBarChart.update();
 }
 
 initCharts();
