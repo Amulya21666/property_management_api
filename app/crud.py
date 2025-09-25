@@ -308,20 +308,60 @@ def get_tenant_property(db, tenant_id: int):
 
 from app.utils import save_file
 
-def create_appliance_with_images(
-    db: Session, user_id: int, name: str, model: str, color: str,
-    status: str, warranty_expiry: date, property_id: int, floor_id: int,
-    location: str, front_file: UploadFile = None, detail_file: UploadFile = None
-):
-    # Save files
-    front_image = save_file(front_file, name, "front") if front_file else None
-    detail_image = save_file(detail_file, name, "detail") if detail_file else None
+import os
+import shutil
+from fastapi import UploadFile
+from sqlalchemy.orm import Session
+from app.models import Appliance
 
-    # Create appliance object
-    appliance = create_appliance(
-        db, user_id=user_id, name=name, model=model, color=color,
-        status=status, warranty_expiry=warranty_expiry,
-        property_id=property_id, floor_id=floor_id,
-        location=location, front_image=front_image, detail_image=detail_image
+# Helper function to save uploaded files
+def save_uploaded_file(file: UploadFile, prefix: str):
+    if file and file.filename:
+        filename = f"{prefix}_{file.filename}".replace(" ", "_")
+        save_dir = "app/static/images"
+        os.makedirs(save_dir, exist_ok=True)
+        file_path = os.path.join(save_dir, filename)
+        with open(file_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+        file.file.close()
+        return filename
+    return None
+
+# Function to create appliance with images
+def create_appliance_with_images(
+    db: Session,
+    user_id: int,
+    name: str,
+    model: str,
+    color: str,
+    status: str,
+    warranty_expiry,
+    property_id: int,
+    floor_id: int,
+    location: str,
+    front_file: UploadFile = None,
+    detail_file: UploadFile = None
+):
+    # Save images and get filenames
+    front_filename = save_uploaded_file(front_file, "front")
+    detail_filename = save_uploaded_file(detail_file, "detail")
+
+    # Create appliance record
+    new_appliance = Appliance(
+        user_id=user_id,
+        name=name,
+        model=model,
+        color=color,
+        status=status,
+        warranty_expiry=warranty_expiry,
+        property_id=property_id,
+        floor_id=floor_id,
+        location=location,
+        front_image=front_filename,
+        detail_image=detail_filename
     )
-    return appliance
+
+    db.add(new_appliance)
+    db.commit()
+    db.refresh(new_appliance)
+    return new_appliance
