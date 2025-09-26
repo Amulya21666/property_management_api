@@ -173,54 +173,54 @@ body {
 <p class="text-muted">No properties assigned yet.</p>
 {% endif %}
 
-<!-- Appliances per Property -->
-<h4 class="section-title"><i class="bi bi-plug-fill"></i> Appliances per Property</h4>
+<!-- Appliances per Property Section -->
+<h4 class="mt-5 mb-3">Appliances per Property</h4>
 {% for prop in properties %}
-<div class="property-card mb-4">
+<div class="tech-card">
     <h5><i class="bi bi-building"></i> {{ prop.name }}</h5>
     <p class="text-muted"><i class="bi bi-geo-alt"></i> {{ prop.address }}</p>
+
     {% set appliance_list = appliances_per_property.get(prop.id, []) %}
     {% if appliance_list %}
-    <div class="row g-3 mt-3">
-        {% for app in appliance_list %}
-        <div class="col-md-12">
-            <div class="appliance-card">
-                <img src="{{ url_for('static', path='images/' ~ (app.front_image or 'default_appliance.jpg')) }}" alt="{{ app.name }}">
-                <div class="appliance-details">
-                    <div class="appliance-title"><i class="bi bi-lightning-charge-fill"></i> {{ app.name }}</div>
-                    <div class="appliance-detail"><strong>Model:</strong> {{ app.model }}</div>
-                    <div class="appliance-detail"><strong>Color:</strong> {{ app.color }}</div>
-                    <div class="appliance-detail">
+        <div class="row g-3 mt-3">
+            {% for app in appliance_list %}
+            <div class="col-md-6">
+                <div class="appliance-card">
+                    <img src="{{ url_for('static', path='images/' ~ (app.front_image or 'default_appliance.jpg')) }}" alt="{{ app.name }}" class="img-fluid rounded">
+                    <h6 class="mt-2"><i class="bi bi-lightning-charge-fill"></i> {{ app.name }}</h6>
+                    <p><strong>Model:</strong> {{ app.model }}</p>
+                    <p><strong>Color:</strong> {{ app.color }}</p>
+                    <p>
                         <strong>Status:</strong>
                         {% if app.status.lower() == 'working' %}
-                        <span class="badge bg-success badge-status">Working</span>
+                        <span class="badge bg-success">{{ app.status }}</span>
                         {% else %}
-                        <span class="badge bg-danger badge-status">{{ app.status }}</span>
+                        <span class="badge bg-danger">{{ app.status }}</span>
                         {% endif %}
-                    </div>
-                    <div class="appliance-detail"><strong>Warranty:</strong>
-                        {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}
-                    </div>
-                    <div class="appliance-detail"><strong>🏢 Floor:</strong>
-                        {{ app.floor.number if app.floor else 'N/A' }}
-                    </div>
-                    <div class="appliance-detail"><strong>📍 Location:</strong>
-                        {{ app.location if app.location else 'N/A' }}
-                    </div>
+                    </p>
+                    <p><strong>Warranty:</strong> {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}</p>
+                    <p><strong>🏢 Floor:</strong> {{ app.floor.number if app.floor else 'N/A' }}</p>
+                    <p><strong>📍 Location:</strong> {{ app.location if app.location else 'N/A' }}</p>
 
                     <!-- Buttons -->
-                    <div class="mt-2 d-flex gap-2 flex-wrap">
-                        <a href="{{ url_for('appliance_detail', appliance_id=app.id) }}" class="btn-glass btn-sm"><i class="bi bi-eye"></i> View</a>
-                        {% if user.role in ["owner", "manager"] %}
-                        <a href="{{ url_for('edit_appliance_page', appliance_id=app.id) }}" class="btn-glass btn-sm"><i class="bi bi-pencil-square"></i> Edit</a>
-                        <a href="/manager/issues" class="btn-glass btn-sm text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Issues</a>
-                        {% endif %}
+                    <div class="mt-2 d-flex gap-2">
+                        <a href="{{ url_for('appliance_detail', appliance_id=app.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <a href="{{ url_for('edit_appliance_page', appliance_id=app.id) }}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </a>
                     </div>
-
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+    {% else %}
+        <p class="text-muted mt-2">No appliances added for this property yet.</p>
+    {% endif %}
+</div>
+{% endfor %}
+
     </div>
     {% else %}
     <p class="text-muted mt-2">No appliances added for this property yet.</p>
