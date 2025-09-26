@@ -198,10 +198,17 @@ body {
                         <span class="badge bg-danger badge-status">{{ app.status }}</span>
                         {% endif %}
                     </div>
-                    <div class="appliance-detail"><strong>Warranty:</strong> {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}</div>
-                    <div class="appliance-detail"><strong>📍 Location:</strong> {{ app.location if app.location else 'N/A' }}</div>
+                    <div class="appliance-detail"><strong>Warranty:</strong>
+                        {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}
+                    </div>
+                    <div class="appliance-detail"><strong>🏢 Floor:</strong>
+                        {{ app.floor.number if app.floor else 'N/A' }}
+                    </div>
+                    <div class="appliance-detail"><strong>📍 Location:</strong>
+                        {{ app.location if app.location else 'N/A' }}
+                    </div>
 
-                    <!-- Buttons including issues -->
+                    <!-- Buttons -->
                     <div class="mt-2 d-flex gap-2 flex-wrap">
                         <a href="{{ url_for('appliance_detail', appliance_id=app.id) }}" class="btn-glass btn-sm"><i class="bi bi-eye"></i> View</a>
                         {% if user.role in ["owner", "manager"] %}
