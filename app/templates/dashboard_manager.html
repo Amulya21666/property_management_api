@@ -24,7 +24,6 @@ body {
 
 .container { max-width: 1100px; padding-top: 50px; padding-bottom: 50px; }
 
-/* Banner */
 .dashboard-banner {
     background: rgba(255,255,255,0.6);
     backdrop-filter: blur(12px);
@@ -40,7 +39,6 @@ body {
 .dashboard-banner h2 { margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 30px; }
 .dashboard-banner p { margin: 0; font-size: 16px; font-weight: 500; }
 
-/* Cards */
 .card-glass {
     border-radius: 25px;
     background: rgba(255,255,255,0.7);
@@ -58,7 +56,6 @@ body {
 
 .section-title { margin-bottom: 20px; font-size: 22px; color: #9b1a2b; }
 
-/* Property / Appliance Cards */
 .property-card, .appliance-card, .alert-custom {
     border-radius: 25px;
     background: rgba(255,255,255,0.5);
@@ -83,10 +80,8 @@ body {
 .appliance-detail { font-size: 14px; margin-bottom: 3px; }
 .badge-status { font-size: 13px; font-weight: 500; padding: 5px 8px; border-radius: 8px; }
 
-/* Alerts */
 .alert-custom { border-left: 5px solid #f472b6; padding-left: 15px; color: #3b1a1a; }
 
-/* Buttons */
 .btn-glass {
     background: rgba(255,255,255,0.5);
     backdrop-filter: blur(10px);
@@ -173,7 +168,7 @@ body {
 <p class="text-muted">No properties assigned yet.</p>
 {% endif %}
 
-<!-- Appliances per Property Section -->
+<!-- Appliances per Property -->
 <h4 class="mt-5 mb-3">Appliances per Property</h4>
 {% for prop in properties %}
 <div class="tech-card">
@@ -187,29 +182,29 @@ body {
             <div class="col-md-6">
                 <div class="appliance-card">
                     <img src="{{ url_for('static', path='images/' ~ (app.front_image or 'default_appliance.jpg')) }}" alt="{{ app.name }}" class="img-fluid rounded">
-                    <h6 class="mt-2"><i class="bi bi-lightning-charge-fill"></i> {{ app.name }}</h6>
-                    <p><strong>Model:</strong> {{ app.model }}</p>
-                    <p><strong>Color:</strong> {{ app.color }}</p>
-                    <p>
-                        <strong>Status:</strong>
-                        {% if app.status.lower() == 'working' %}
-                        <span class="badge bg-success">{{ app.status }}</span>
-                        {% else %}
-                        <span class="badge bg-danger">{{ app.status }}</span>
-                        {% endif %}
-                    </p>
-                    <p><strong>Warranty:</strong> {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}</p>
-                    <p><strong>🏢 Floor:</strong> {{ app.floor.number if app.floor else 'N/A' }}</p>
-                    <p><strong>📍 Location:</strong> {{ app.location if app.location else 'N/A' }}</p>
-
-                    <!-- Buttons -->
-                    <div class="mt-2 d-flex gap-2">
-                        <a href="{{ url_for('appliance_detail', appliance_id=app.id) }}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-eye"></i> View
-                        </a>
-                        <a href="{{ url_for('edit_appliance_page', appliance_id=app.id) }}" class="btn btn-sm btn-outline-warning">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </a>
+                    <div class="appliance-details">
+                        <h6 class="appliance-title"><i class="bi bi-lightning-charge-fill"></i> {{ app.name }}</h6>
+                        <p class="appliance-detail"><strong>Model:</strong> {{ app.model }}</p>
+                        <p class="appliance-detail"><strong>Color:</strong> {{ app.color }}</p>
+                        <p class="appliance-detail">
+                            <strong>Status:</strong>
+                            {% if app.status.lower() == 'working' %}
+                            <span class="badge bg-success">{{ app.status }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ app.status }}</span>
+                            {% endif %}
+                        </p>
+                        <p class="appliance-detail"><strong>Warranty:</strong> {{ app.warranty_expiry.strftime('%Y-%m-%d') if app.warranty_expiry else 'N/A' }}</p>
+                        <p class="appliance-detail"><strong>🏢 Floor:</strong> {{ app.floor.number if app.floor else 'N/A' }}</p>
+                        <p class="appliance-detail"><strong>📍 Location:</strong> {{ app.location if app.location else 'N/A' }}</p>
+                        <div class="mt-2 d-flex gap-2">
+                            <a href="{{ url_for('appliance_detail', appliance_id=app.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a href="{{ url_for('edit_appliance_page', appliance_id=app.id) }}" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -217,13 +212,6 @@ body {
         </div>
     {% else %}
         <p class="text-muted mt-2">No appliances added for this property yet.</p>
-    {% endif %}
-</div>
-{% endfor %}
-
-    </div>
-    {% else %}
-    <p class="text-muted mt-2">No appliances added for this property yet.</p>
     {% endif %}
 </div>
 {% endfor %}
