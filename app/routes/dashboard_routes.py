@@ -322,7 +322,7 @@ def add_appliance_page(request: Request, user=Depends(get_current_user), db: Ses
         "request": request,
         "user": user,
         "properties": properties,
-        "floors_json": json.dumps(floors_dict),  # used in JS
+        "floors_json": floors_dict,  # used in JS
         "current_date": date.today()
     })
 
