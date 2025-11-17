@@ -8,22 +8,21 @@ from fastapi import Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
-import shutil
-from fastapi import UploadFile
 
+# ===================================================================
+# CONSTANTS & ENVIRONMENT VARIABLES
+# ===================================================================
 
-# --------------------------
-# Constants for email sending
-# --------------------------
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 
-# Force hosted URL (ignore .env)
-HOSTED_URL = "https://property-management-api-e08h.onrender.com"
+# Use .env if available, fallback to default — safer than forcing overwrite
+HOSTED_URL = os.getenv("HOSTED_URL", "https://property-management-api-e08h.onrender.com")
 
-# --------------------------
-# Password hashing
-# --------------------------
+# ===================================================================
+# PASSWORD HASHING
+# ===================================================================
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
@@ -32,15 +31,21 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-# --------------------------
-# OTP generation & verification
-# --------------------------
+# ===================================================================
+# OTP GENERATION & VERIFICATION
+# ===================================================================
+
 def generate_otp(length: int = 6) -> str:
-    if length < 4:
-        length = 4
+    """Generate a numeric OTP."""
+    length = max(4, length)
     return str(random.randint(10**(length-1), 10**length - 1))
 
+
 def send_otp_email(to_email: str, otp: str) -> bool:
+    """
+    Sends OTP email using Brevo API.
+    Returns True on success, False on failure.
+    """
     try:
         url = "https://api.brevo.com/v3/smtp/email"
         headers = {
@@ -48,20 +53,42 @@ def send_otp_email(to_email: str, otp: str) -> bool:
             "api-key": BREVO_API_KEY,
             "content-type": "application/json"
         }
+
+        # Beautiful email template
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial; padding: 20px;">
+            <h2 style="color:#2b6cb0;">Your OTP Code</h2>
+            <p style="font-size: 18px;">Your One-Time Password is:</p>
+            <h1 style="font-size: 32px; color:#2b6cb0;">{otp}</h1>
+            <p>This OTP is valid for <b>10 minutes</b>.</p>
+            <br>
+            <p>If you did not request this code, please ignore this email.</p>
+        </body>
+        </html>
+        """
+
         payload = {
-            "sender": {"name": "Your App", "email": SENDER_EMAIL},
+            "sender": {"name": "Property Management", "email": SENDER_EMAIL},
             "to": [{"email": to_email}],
             "subject": "Your OTP Code",
-            "htmlContent": f"<html><body><h3>Your OTP is: {otp}</h3></body></html>"
+            "htmlContent": html_body
         }
+
         response = requests.post(url, headers=headers, json=payload)
-        print(f"Brevo API Response [{response.status_code}]: {response.text}")
+
+        # Remove OTP from logs — only status
+        print(f"Brevo OTP Email Status: {response.status_code}")
+
         return response.status_code in [200, 201]
+
     except Exception as e:
-        print(f"❌ Exception while sending email: {e}")
+        print(f"❌ Error sending OTP email: {e}")
         return False
 
+
 def verify_otp(user, input_otp: str) -> bool:
+    """Validates OTP & expiry."""
     if not user.otp or not user.otp_expiry:
         return False
     if user.otp != input_otp:
@@ -70,36 +97,54 @@ def verify_otp(user, input_otp: str) -> bool:
         return False
     return True
 
-# --------------------------
-# Get current user (session-based)
-# --------------------------
+# ===================================================================
+# GET CURRENT USER (SESSION BASED)
+# ===================================================================
+
 def get_current_user(request: Request, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
     user = db.query(models.User).filter(models.User.id == user_id).first()
+
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+
     return user
 
-# --------------------------
-# Send activation email
-# --------------------------
+# ===================================================================
+# SEND ACTIVATION EMAIL FOR TENANTS
+# ===================================================================
+
 def send_activation_email(to_email: str, token: str):
+    """
+    Sends tenant activation email.
+    """
     activation_link = f"{HOSTED_URL}/activate/{token}"
 
     subject = "Activate Your Tenant Account"
-    body = f"""
-    Hello,
 
-    You have been invited as a tenant. Click the link below to activate your account:
+    html_body = f"""
+    <html>
+    <body style="font-family: Arial; padding: 20px;">
+        <h2 style="color:#2b6cb0;">Activate Your Tenant Account</h2>
 
-    {activation_link}
+        <p>You have been invited as a tenant. Click the link below to activate your account:</p>
 
-    If you didn't expect this email, you can ignore it.
+        <a href="{activation_link}" 
+           style="background:#2b6cb0; color:white; padding:10px 20px; border-radius:5px; text-decoration:none;">
+            Activate Account
+        </a>
 
-    Thanks,
-    Property Management Team
+        <p style="margin-top: 20px;">
+            If you didn’t expect this email, you can safely ignore it.
+        </p>
+
+        <br>
+        <p>Thanks,<br>Property Management Team</p>
+    </body>
+    </html>
     """
 
     try:
@@ -109,36 +154,21 @@ def send_activation_email(to_email: str, token: str):
             "api-key": BREVO_API_KEY,
             "content-type": "application/json"
         }
+
         payload = {
             "sender": {"name": "Property Management", "email": SENDER_EMAIL},
             "to": [{"email": to_email}],
             "subject": subject,
-            "htmlContent": f"<html><body><p>{body.replace(chr(10), '<br>')}</p></body></html>"
+            "htmlContent": html_body
         }
+
         response = requests.post(url, headers=headers, json=payload)
-        print(f"Brevo API Response [{response.status_code}]: {response.text}")
-        print(f"✅ Activation link sent: {activation_link}")
+
+        # Only log status, avoid showing sensitive info
+        print(f"Brevo Activation Email Status: {response.status_code}")
+
         return response.status_code in [200, 201]
+
     except Exception as e:
-        print(f"❌ Exception while sending activation email: {e}")
+        print(f"❌ Error sending activation email: {e}")
         return False
-
-# --------------------------
-# FILE UPLOAD / IMAGE SAVING
-# --------------------------
-UPLOADS_DIR = "app/static/images"
-os.makedirs(UPLOADS_DIR, exist_ok=True)
-
-def save_file(upload_file: UploadFile, name: str, suffix: str) -> str | None:
-    """
-    Save an uploaded file to static/images folder.
-    Returns the saved filename or None if no file provided.
-    """
-    if upload_file and upload_file.filename:
-        safe_filename = f"{name}_{suffix}_{upload_file.filename}".replace(" ", "_")
-        file_path = os.path.join(UPLOADS_DIR, safe_filename)
-        with open(file_path, "wb") as f:
-            shutil.copyfileobj(upload_file.file, f)
-        upload_file.file.close()
-        return safe_filename
-    return None
