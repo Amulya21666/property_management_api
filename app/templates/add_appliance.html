@@ -30,6 +30,7 @@
 
       <!-- Location Section -->
       <p class="section-title"><i class="bi bi-building"></i> Location Details</p>
+
       <label for="property_id" class="form-label">Select Property</label>
       <select class="form-select" id="property_id" name="property_id" required>
         <option value="" disabled selected>Choose Property</option>
@@ -43,8 +44,9 @@
         <option value="" disabled selected>Choose Floor</option>
       </select>
 
-      <label for="place" class="form-label">Select Place</label>
-      <select class="form-select" id="place" name="place" required>
+      <!-- FIXED: location field -->
+      <label for="location" class="form-label">Select Place</label>
+      <select class="form-select" id="location" name="location" required>
         <option value="" disabled selected>Choose Place</option>
         <option value="Living Room">Living Room</option>
         <option value="Kitchen">Kitchen</option>
@@ -56,6 +58,7 @@
 
       <!-- Appliance Details -->
       <p class="section-title"><i class="bi bi-tools"></i> Appliance Details</p>
+
       <label for="name" class="form-label">Appliance Name</label>
       <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Refrigerator" required>
 
@@ -76,6 +79,7 @@
 
       <!-- Images -->
       <p class="section-title"><i class="bi bi-image"></i> Upload Images</p>
+
       <label for="front_image" class="form-label">Front Image</label>
       <input type="file" class="form-control" id="front_image" name="front_image" accept="image/*">
 
@@ -93,7 +97,6 @@
 </div>
 
 <script>
-  // floorsDict must be a JS object with property IDs as keys
   const floorsDict = {{ floors_json | tojson }};
   const propertySelect = document.getElementById("property_id");
   const floorSelect = document.getElementById("floor_id");
